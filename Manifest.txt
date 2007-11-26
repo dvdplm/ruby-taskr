@@ -1,0 +1,9 @@
+Rakefile
+README.txt
+CHANGELOG.txt
+Manifest.txt
+setup.rb
+lib/taskr/version.rb
+lib/taskr.rb
+test/test_helper.rb
+test/taskr_test.rb
