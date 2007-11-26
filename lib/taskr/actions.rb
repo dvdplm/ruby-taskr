@@ -76,6 +76,7 @@ module Taskr
       description = "Perform a REST call on a remote service using ActiveResource."
       
       def execute
+        $LOG.debug self
         ::ActiveResource::Base.logger = $LOG
         
         eval %{

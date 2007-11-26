@@ -1,3 +1,10 @@
+$: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/activeresource/lib"
+$: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/activesupport/lib"
+$: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/activerecord/lib"
+require 'active_support'
+require 'active_resource'
+require 'active_record'
+
 require 'rubygems'
 
 # make things backwards-compatible for rubygems < 0.9.0

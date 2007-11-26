@@ -69,6 +69,9 @@ module Taskr::Views
         label 'action_class_name' 
         input :type => 'text', :name => 'action_class_name', :size => 40
         br
+        label 'site'
+        input :type => 'text', :name => 'parameters[site]', :size => 40
+        br
         label 'recipients'
         input :type => 'text', :name => 'parameters[recipients]', :size => 40
         br

@@ -47,10 +47,6 @@ def Taskr.create
   tasks.each do |t|
     t.schedule! $scheduler
   end
-  
-  $scheduler.schedule_every('10s') do
-    puts "tick"
-  end
 end
 
 Taskr.start_picnic
