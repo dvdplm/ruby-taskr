@@ -28,6 +28,7 @@ module Taskr::Models
       action_parameters.each{|p| parameters[p.name] = p.value}
       
       action = (action_class.kind_of?(Class) ? action_class : action_class.constantize).new(parameters)
+      action.task = self
       
       job_id = scheduler.send(method, schedule_when, :schedulable => action)
       
@@ -48,6 +49,10 @@ module Taskr::Models
     
     def action_class
       self[:action_class_name].constantize
+    end
+    
+    def to_s
+      "#<#{self.class}:#{self.id}>"
     end
   end
 

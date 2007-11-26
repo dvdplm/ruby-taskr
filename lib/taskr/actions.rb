@@ -17,6 +17,7 @@ module Taskr
       class_inheritable_accessor :description
       
       attr_accessor :parameters
+      attr_accessor :task
       
       def initialize(parameters)
         self.parameters = HashWithIndifferentAccess.new(parameters)
@@ -78,6 +79,7 @@ module Taskr
       def execute
         $LOG.debug self
         ::ActiveResource::Base.logger = $LOG
+        ::ActiveResource::Base.logger.progname = (task ? task.to_s : self)
         
         eval %{
           class Proxy < ::ActiveResource::Base
