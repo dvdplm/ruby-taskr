@@ -1,0 +1,29 @@
+body {
+    font-size: 9pt;
+    font-family: Verdana;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+th, td {
+    font-size: 9pt;
+    padding-left: 2pt;
+    padding-right: 6pt;
+    vertical-align: top;
+}
+
+thead th {
+    background: #dde;
+    text-align: left;
+    font-size: 8pt;
+}
+
+td {
+    
+}
+
+label {
+    font-weight: bold;
+}

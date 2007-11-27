@@ -5,4 +5,17 @@ module Taskr::Helpers
       yield
     end
   end
+  
+  def html_scaffold
+    html do
+      head do
+        title "Taskr"
+        link(:rel => 'stylesheet', :type => 'text/css', :href => '/public/taskr.css')
+        script(:type => 'text/javascript', :src => '/public/prototype.js')
+      end
+      body do
+        yield
+      end
+    end
+  end
 end

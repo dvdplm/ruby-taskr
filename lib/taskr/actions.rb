@@ -10,10 +10,19 @@ end
 module Taskr
   module Actions
     
+    def self.list
+      actions = []
+      Taskr::Actions.constants.each do |m| 
+        a = Taskr::Actions.const_get(m)
+        actions << a if a < Taskr::Actions::Base
+      end
+      return actions
+    end
+    
     class Base
       include OpenWFE::Schedulable
       
-      class_inheritable_array :parameters
+      class_inheritable_accessor :parameters
       class_inheritable_accessor :description
       
       attr_accessor :parameters
@@ -32,19 +41,20 @@ module Taskr
         begin
           execute
         rescue => e
-          puts e.inspect
+          puts "ERROR: #{e.inspect}"
+          puts e.stacktrace
           raise e
         end
       end
     end
     
     class Shell < Base
-      parameters = ['command', 'user']
-      description = "Execute a shell command (be careful!)"
+      self.parameters = ['command', 'as_user']
+      self.description = "Execute a shell command (be careful!)"
       
       def execute
         if parameters.kind_of? Hash
-          user = parameters['user']
+          user = parameters['as_user']
           cmd = parameters['command']
         else
           user = nil
@@ -63,8 +73,8 @@ module Taskr
     end
     
     class Ruby < Base
-      parameters = ['code']
-      description = "Execute some Ruby code."
+      self.parameters = ['code']
+      self.description = "Execute some Ruby code."
       
       def execute
         code = parameters['code']
@@ -73,8 +83,8 @@ module Taskr
     end
     
     class ActiveResource < Base
-      parameters = ['site', 'resource', 'action', 'parameters']
-      description = "Perform a REST call on a remote service using ActiveResource."
+      self.parameters = ['site', 'resource', 'action', 'parameters']
+      self.description = "Perform a REST call on a remote service using ActiveResource."
       
       def execute
         $LOG.debug self
@@ -110,8 +120,8 @@ module Taskr
     end
   
     class Howlr < ActiveResource
-      parameters = ['site', 'from', 'recipients', 'subject', 'body']
-      description = "Send a message through a Howlr service."
+      self.parameters = ['site', 'from', 'recipients', 'subject', 'body']
+      self.description = "Send a message through a Howlr service."
       
       def execute
         parameters['action'] = 'create'
