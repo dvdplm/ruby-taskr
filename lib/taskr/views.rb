@@ -9,8 +9,11 @@ module Taskr::Views
     CONTENT_TYPE = 'text/xml'
     
     def tasks_list
-      puts @tasks.class
       @tasks.to_xml(:root => 'tasks')
+    end
+    
+    def view_task
+      @task.to_xml(:root => 'task', :include => [:task_actions])
     end
     
     def create_task_result
@@ -28,13 +31,13 @@ module Taskr::Views
       html_scaffold do
         h1 {"Tasks"}
         
-        a(:href => self/'tasks/new') {"Schedule New Task"}
+        p{a(:href => self/'tasks/new') {"Schedule New Task"}}
         
         table do
           thead do
             tr do
               th "Name"
-              th "Action"
+              th "Action(s)"
               th "When"
               th "Job ID"
               th "Created On"
@@ -44,8 +47,18 @@ module Taskr::Views
           tbody do
             @tasks.each do |t|
               tr do
-                td {a(:href => self/"tasks/#{t.id}") {t.name}}
-                td t.action_class_name
+                td {a(:href => self/"tasks/#{t.id}") {strong{t.name}}}
+                td do 
+                  if t.task_actions.length > 1
+                    ol(:style => 'padding-left: 20px') do 
+                      t.task_actions.each do |ta| 
+                        li{ta.action_class_name}
+                      end
+                    end
+                  else
+                    t.task_actions.first.action_class_name
+                  end
+                end
                 td "#{t.schedule_method} #{t.schedule_when}"
                 td t.scheduler_job_id
                 td t.created_on
@@ -58,7 +71,7 @@ module Taskr::Views
     end
     
     def new_task
-      form :method => 'post', :action => '/tasks' do
+      form :method => 'post', :action => '/tasks.xml' do
         html_scaffold do
           h1 "New Task"
           input :type => 'hidden', :name => '_method', :value => 'post'
@@ -70,21 +83,20 @@ module Taskr::Views
           end
           
           p do
-            label 'schedule_method'
+            label 'schedule'
             br
-            input :type => 'text', :name => 'schedule_method', :size => 40
-          end
-          
-          p do
-            label 'schedule_when'
-            br
-            input :type => 'text', :name => 'schedule_when', :size => 40
+            select(:name => 'schedule_method') do
+              ['every','at','in','cron'].each do |method|
+                option(:value => method) {method}
+              end
+            end
+            input :type => 'text', :name => 'schedule_when', :size => 15
           end
           
           p do
             label 'action_class_name'
             br
-            select(:type => 'text', :name => 'action_class_name', :id => 'action_class_name') do
+            select(:name => 'action[][action_class_name]', :id => 'action_class_name') do
               option(:value => "")
               @actions.each do |a|
                 a.to_s =~ /Taskr::Actions::([^:]*?)$/
@@ -132,7 +144,7 @@ module Taskr::Views
         p do
           label param
           br
-          input :type => 'text', :name => "parameters[#{param}]", :size => 40
+          input :type => 'text', :name => "action[][parameters][#{param}]", :size => 40
         end
       end
     end

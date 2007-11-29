@@ -1,21 +1,5 @@
 module Taskr::Controllers
   
-  class Test < R '/test'
-    def get
-      require 'taskr/actions'
-      
-      @tasks = Task.find(:all)
-      
-      @actions = Taskr::Actions.list
-      
-      render :test
-    end
-    
-    def post
-      render :action_parameters
-    end
-  end
-  
   class Actions < REST 'actions'
     def list
       @actions = Taskr::Actions.list
@@ -50,64 +34,100 @@ module Taskr::Controllers
     end
     
     def read(id)
-      @task = Task.find(id)
+      @task = Task.find(id, :include => [:task_actions])
       
       render :view_task
     end
     
     def create
-      action_class_name = @input[:action_class_name]
-      action_class_name = "Taskr::Actions::#{action_class_name}" unless action_class_name =~ /^Taskr::Actions::/
-      
       begin
-        action_class = action_class_name.constantize
-        unless action_class.include? OpenWFE::Schedulable
-          raise ArgumentError, 
-            "#{@input[:action_class_name].inspect} cannot be used as an action because it does not include the OpenWFE::Schedulable module."
+        puts @input.class
+        puts @input.to_xml if @input.kind_of?(XmlSimple)
+        puts @input.inspect
+        
+        task_data = @input[:task] || @input
+          
+        name            = task_data[:name]
+        created_by      = @env['REMOTE_HOST']
+        schedule_method = task_data[:schedule_method]
+        schedule_when   = task_data[:schedule_when]
+        
+        @task = Task.new(
+          :name => name,
+          :created_by => created_by,
+          :schedule_method => schedule_method,
+          :schedule_when => schedule_when
+        )
+        
+        if task_data[:actions]
+          if task_data[:actions].kind_of?(Array)
+            actions = task_data[:actions]
+          else
+            actions = task_data[:actions][:action]
+          end
+        elsif task_data[:action]
+          actions = task_data[:action]
+        else
+          raise ArgumentError, "Missing action(s) parameter."
         end
-      rescue NameError
-        raise ArgumentError, 
-          "#{@input[:action_class_name].inspect} is not defined (i.e. there is no such action class)."
+        
+        actions = [actions] unless actions.kind_of? Array
+        puts actions.inspect
+        
+        i = 0
+        actions.each do |a|
+          action_class_name = a[:action_class_name]
+          action_class_name = "Taskr::Actions::#{action_class_name}" unless action_class_name =~ /^Taskr::Actions::/
+          
+          begin
+            action_class = action_class_name.constantize
+            unless action_class.include? OpenWFE::Schedulable
+              raise ArgumentError, 
+                "#{a[:action_class_name].inspect} cannot be used as an action because it does not include the OpenWFE::Schedulable module."
+            end
+          rescue NameError
+            raise ArgumentError, 
+              "#{a[:action_class_name].inspect} is not defined (i.e. there is no such action class)."
+          end
+          
+          action = TaskAction.new(:order => a[:order] || i, :action_class_name => action_class_name)
+          
+          parameters = a[:parameters] || {}
+          
+          parameters.each do |k,v|
+            action.action_parameters << TaskActionParameter.new(:name => k, :value => v)
+          end
+          
+          @task.task_actions << action
+          i += 1
+        end
+        
+        
+        unless @task.valid?
+          @status = 500
+          return render(:new_task)
+        end
+      
+        
+        @task.schedule! $scheduler
+        
+        if @task.save
+          @headers['Location'] = "/tasks.xml/#{@task.id}"
+        end
+        
+        return render(:view_task)
+      rescue => e
+        puts e.inspect
+        puts e.backtrace
+        raise e
       end
-      
-      name            = @input[:name]
-      created_by      = @env['REMOTE-HOST']
-      schedule_method = @input[:schedule_method]
-      schedule_when   = @input[:schedule_when]
-      
-      @task = Task.new(
-        :name => name,
-        :created_by => created_by,
-        :schedule_method => schedule_method,
-        :schedule_when => schedule_when,
-        :action_class => action_class
-      )
-      
-      parameters = @input[:parameters] || {}
-      parameters.each do |k,v|
-        p = TaskActionParameter.new(:name => k, :value => v)
-        @task.action_parameters << p
-      end
-      
-      unless @task.valid?
-        @status = 500
-        return render(:new_task)
-      end
-      
-      @task.schedule! $scheduler
-      
-      if @task.save
-        @headers['Location'] = "/tasks.xml/#{@task.id}"
-      end
-      
-      return redirect(self/'tasks')
     end
     
     def destroy(id)
       @task = Task.find(id)
       $scheduler.unschedule(@task.scheduler_job_id) if @task.scheduler_job_id
       @task.destroy
-      return redirect(self/'/')
+      return redirect('/tasks')
     end
   end
 end

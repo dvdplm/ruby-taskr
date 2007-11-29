@@ -48,6 +48,29 @@ module Taskr
       end
     end
     
+    class Multi
+      include OpenWFE::Schedulable
+      
+      attr_accessor :actions
+      
+      def initialize
+        self.actions = []
+      end
+      
+      def trigger(trigger_args = {})
+        puts trigger_args.inspect
+        begin
+          actions.each do |a|
+            a.trigger(trigger_args)
+          end
+        rescue => e
+          puts "ERROR: #{e.inspect}"
+          puts e.stacktrace
+          raise e
+        end
+      end
+    end
+    
     class Shell < Base
       self.parameters = ['command', 'as_user']
       self.description = "Execute a shell command (be careful!)"
