@@ -1,3 +1,18 @@
+# This file is part of Taskr.
+#
+# Taskr is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Taskr is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Taskr.  If not, see <http://www.gnu.org/licenses/>.
+
 # need auto_validation off to render non-XHTML XML
 Markaby::Builder.set(:auto_validation, false)
 Markaby::Builder.set(:indent, 2)
@@ -37,8 +52,8 @@ module Taskr::Views
           thead do
             tr do
               th "Name"
-              th "Action(s)"
-              th "When"
+              th "Schedule"
+              th "Last Triggered"
               th "Job ID"
               th "Created On"
               th "Created By"
@@ -48,18 +63,8 @@ module Taskr::Views
             @tasks.each do |t|
               tr do
                 td {a(:href => self/"tasks/#{t.id}") {strong{t.name}}}
-                td do 
-                  if t.task_actions.length > 1
-                    ol(:style => 'padding-left: 20px') do 
-                      t.task_actions.each do |ta| 
-                        li{ta.action_class_name}
-                      end
-                    end
-                  else
-                    t.task_actions.first.action_class_name
-                  end
-                end
                 td "#{t.schedule_method} #{t.schedule_when}"
+                td {t.last_triggered.ago if t.last_triggered}
                 td t.scheduler_job_id
                 td t.created_on
                 td t.created_by
@@ -71,6 +76,21 @@ module Taskr::Views
     end
     
     def new_task
+      script(:type => 'text/javascript') do
+        %{
+          function show_action_parameters(num) {
+            new Ajax.Updater('parameters_'+num, '/actions', {
+                method: 'get',
+                parameters: { 
+                  id: $F('action_class_name_'+num), 
+                  action: 'parameters_form',
+                  num: num
+                }
+            });
+          }
+        }
+      end
+      
       form :method => 'post', :action => '/tasks.xml' do
         html_scaffold do
           h1 "New Task"
@@ -93,26 +113,20 @@ module Taskr::Views
             input :type => 'text', :name => 'schedule_when', :size => 15
           end
           
+          action_form
+          
           p do
-            label 'action_class_name'
-            br
-            select(:name => 'action[][action_class_name]', :id => 'action_class_name') do
-              option(:value => "")
-              @actions.each do |a|
-                a.to_s =~ /Taskr::Actions::([^:]*?)$/
-                option(:value => $~[1]) {$~[1]}
-              end
-            end
+            a(:id => 'add_action', :href => '#'){'Add another action'}
           end
-        
-          div(:id => 'parameters')
           script(:type => 'text/javascript') do
             %{
-              Event.observe('action_class_name', 'change', function() {
-                new Ajax.Updater('parameters', '/actions', {
+              Event.observe('add_action', 'click', function() {
+                new Ajax.Updater('add_action', '/actions', {
                     method: 'get',
-                    parameters: { id: $F('action_class_name'), action: 'form' }
+                    parameters: { action: 'new', num: $$('select.action_class_name').size() },
+                    insertion: Insertion.Before
                 });
+                return false;
               })
             }
           end
@@ -123,10 +137,58 @@ module Taskr::Views
     end
     
     def view_task
-      form(:method => 'delete', :style => 'display: inline') do
-        button(:type => 'submit', :value => 'delete') {"Delete"}
+      html_scaffold do
+        form(:method => 'delete', :style => 'display: inline') do
+          button(:type => 'submit', :value => 'delete') {"Delete"}
+        end
+        br
+        a(:href => '/tasks') {"Back to Task List"}
+        
+        h1 "Task #{@task.id}"
+        table do
+          tr do
+            th "Name:"
+            td @task.name
+          end
+          tr do
+            th "Schedule:"
+            td "#{@task.schedule_method} #{@task.schedule_when}"
+          end
+          tr do
+            th "Triggered:"
+            td do
+              if @task.last_triggered
+                span @task.last_triggered.ago
+                span(:style => 'font-size: 8pt; color: #bbb'){"(#{@task.last_triggered})"}
+              else
+                em "Not yet triggered"
+              end
+            end 
+          end
+          tr do
+            th "Actions:"
+            td do 
+              if @task.task_actions.length > 1
+                ol(:style => 'padding-left: 20px') do
+                  @task.task_actions.each do |ta|
+                    html_task_action_li(ta)
+                  end
+                end
+              else
+                html_task_action_li(@task.task_actions.first)
+              end
+            end
+          end
+          tr do
+            th "Created By:"
+            td @task.created_by
+          end
+          tr do
+            th "Created On:"
+            td @task.created_on
+          end
+        end
       end
-      pre @task.to_yaml
     end
     
     def action_list
@@ -139,67 +201,39 @@ module Taskr::Views
     end
     
     def action_parameters_form
-      puts @action.inspect
+      @num ||= 0
+      
       @action.parameters.each do |param|
         p do
           label param
           br
-          input :type => 'text', :name => "action[][parameters][#{param}]", :size => 40
+          input :type => 'textarea', :name => "action[#{@num}][#{param}]", :size => 40
         end
       end
     end
     
-    def test
-      html_scaffold do
-        hr 
-        form :method => 'get', :action => '/tasks' do
-          p "read"
-          input :type => 'hidden', :name => '_method', :value => 'get'
-          select :name => 'id' do
-            @tasks.each do |t|
-              option(:value => t.id) { t.name }
-            end
+    def action_form
+      @num ||= 0
+      
+      p do
+        label 'action_class_name'
+        br
+        select(:name => "action[#{@num}][action_class_name]", 
+            :id => "action_class_name_#{@num}", 
+            :class => "action_class_name",
+            :onchange => "show_action_parameters(#{@num})") do
+          option(:value => "")
+          @actions.each do |a|
+            a.to_s =~ /Taskr::Actions::([^:]*?)$/
+            option(:value => $~[1]) {$~[1]}
           end
-          button(:type => 'submit') {"submit"}
         end
-        hr
-        
-        form :method => 'get', :action => '/tasks' do
-          p "list"
-          input :type => 'hidden', :name => '_method', :value => 'get'
-          button(:type => 'submit') {"submit"}
-        end
-        hr
-        
-        
-        hr
-        
-  #      form :method => 'post', :action => '/tasks' do
-  #        p "destroy"
-  #        select :name => 'id' do
-  #          @tasks.each do |w|
-  #            option(:value => w.environment_id.wfid) { w.environment_id.wfid }
-  #          end
-  #        end
-  #        input :type => 'hidden', :name => '_method', :value => 'delete'
-  #        button(:type => 'submit') {"submit"}
-  #      end
-  #      hr
-  #      
-  #      form :method => 'post', :action => '/tasks' do
-  #        p "update"
-  #        input :type => 'hidden', :name => '_method', :value => 'put'
-  #        input :type => 'text', :name => 'participant'
-  #        input :type => 'text', :name => 'data[name]'
-  #        select :name => 'id' do
-  #          @tasks.each do |w|
-  #            option(:value => w.environment_id.wfid) { w.environment_id.wfid }
-  #          end
-  #        end
-  #        button(:type => 'submit') {"submit"}
-  #      end
       end
+    
+      div(:id => "parameters_#{@num}")
+      
     end
+   
   end
   
   default_format :HTML

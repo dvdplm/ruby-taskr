@@ -1,13 +1,31 @@
+# This file is part of Taskr.
+#
+# Taskr is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Taskr is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Taskr.  If not, see <http://www.gnu.org/licenses/>.
+
 module Taskr::Controllers
   
-  class Actions < REST 'actions'
+  class ActionTypes < REST 'action_types'
     def list
       @actions = Taskr::Actions.list
       
       render :action_list
     end
-    
-    def form(id)
+  end
+  
+  class Actions < REST 'actions'
+    def parameters_form(id)
+      @num = @input[:num] || 0
       @action = Taskr::Actions.list.find {|a| a.to_s =~ Regexp.new("#{id}$")}
       if @action
         render :action_parameters_form
@@ -15,6 +33,12 @@ module Taskr::Controllers
         @status = 404
         "Action #{id.inspect} not defined"
       end
+    end
+    
+    def new
+      @num = @input[:num] || 0
+      @actions = Taskr::Actions.list
+      render :action_form
     end
   end
   
@@ -45,7 +69,8 @@ module Taskr::Controllers
         puts @input.to_xml if @input.kind_of?(XmlSimple)
         puts @input.inspect
         
-        task_data = @input[:task] || @input
+        # the "0" is for compatibility with PHP's Zend_Rest_Client
+        task_data = @input[:task] || @input["0"] || @input
           
         name            = task_data[:name]
         created_by      = @env['REMOTE_HOST']
@@ -59,16 +84,21 @@ module Taskr::Controllers
           :schedule_when => schedule_when
         )
         
-        if task_data[:actions]
-          if task_data[:actions].kind_of?(Array)
-            actions = task_data[:actions]
-          else
-            actions = task_data[:actions][:action]
+        # some gymnastics here to provide compatibility for the way various
+        # REST client libraries submit data
+        actions_data = task_data[:actions] || task_data[:action]
+        
+        raise ArgumentError, "Missing action(s) parameter." if actions_data.blank?
+
+        if actions_data.kind_of?(Array)
+          actions = actions_data
+        elsif actions_data["0"]
+          actions = []
+          actions_data.each do |i,a|
+            actions << a
           end
-        elsif task_data[:action]
-          actions = task_data[:action]
         else
-          raise ArgumentError, "Missing action(s) parameter."
+          actions = actions_data[:action]
         end
         
         actions = [actions] unless actions.kind_of? Array
@@ -76,6 +106,7 @@ module Taskr::Controllers
         
         i = 0
         actions.each do |a|
+          puts a.inspect
           action_class_name = a[:action_class_name]
           action_class_name = "Taskr::Actions::#{action_class_name}" unless action_class_name =~ /^Taskr::Actions::/
           
@@ -92,10 +123,8 @@ module Taskr::Controllers
           
           action = TaskAction.new(:order => a[:order] || i, :action_class_name => action_class_name)
           
-          parameters = a[:parameters] || {}
-          
-          parameters.each do |k,v|
-            action.action_parameters << TaskActionParameter.new(:name => k, :value => v)
+          action_class.parameters.each do |p|
+            action.action_parameters << TaskActionParameter.new(:name => p, :value => a[p])
           end
           
           @task.task_actions << action
@@ -112,7 +141,7 @@ module Taskr::Controllers
         @task.schedule! $scheduler
         
         if @task.save
-          @headers['Location'] = "/tasks.xml/#{@task.id}"
+          @headers['Location'] = "/tasks/#{@task.id}?format=#{@format}"
         end
         
         return render(:view_task)
