@@ -19,7 +19,9 @@ require 'openwfe/util/scheduler'
 module Taskr::Models
 
   class Task < Base
-    has_many :task_actions
+    has_many :task_actions, 
+      :include => :action_parameters, 
+      :dependent => :destroy
     
     serialize :schedule_options
     
@@ -88,7 +90,8 @@ module Taskr::Models
     
     has_many :action_parameters, 
       :class_name => 'TaskActionParameter', 
-      :foreign_key => :task_action_id
+      :foreign_key => :task_action_id,
+      :dependent => :destroy
     
     validates_associated :action_parameters
     
@@ -104,6 +107,21 @@ module Taskr::Models
       self[:action_class_name].constantize
     end
     
+    def to_xml(options = {})
+      options[:indent] ||= 2
+      xml = options[:builder] ||= Builder::XmlMarkup.new(:indent => options[:indent])
+      xml.instruct! unless options[:skip_instruct]
+      xml.tag!('task-action', :type => self.class) do
+        xml.tag!('id', {:type => 'integer'}, id)
+        xml.tag!('action-class-name', action_class_name)
+        xml.tag!('order', {:type => 'integer'}, order) unless order.blank?
+        xml.tag!('task-id', {:type => 'integer'}, task_id)
+        xml.tag!('action-parameters', {:type => 'array'}) do
+          action_parameters.each {|ap| ap.to_xml(options)}
+        end
+      end
+    end
+    
     def to_s
       "#<#{self.class}:#{self.id}>"
     end
@@ -112,6 +130,19 @@ module Taskr::Models
   class TaskActionParameter < Base
     belongs_to :task_action
     serialize :value
+    
+    def to_xml(options = {})
+      options[:indent] ||= 2
+      xml = options[:builder] ||= Builder::XmlMarkup.new(:indent => options[:indent])
+      xml.instruct! unless options[:skip_instruct]
+      xml.tag!('action-parameter', :type => self.class) do
+        xml.tag!('id', {:type => 'integer'}, id)
+        xml.tag!('name', name)
+        xml.tag!('value') do
+          xml.cdata!(value)
+        end
+      end
+    end
     
     def to_s
       "#<#{self.class}:#{self.id}>"

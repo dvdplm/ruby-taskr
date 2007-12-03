@@ -46,7 +46,7 @@ module Taskr::Controllers
     include Taskr::Models
     
     def list
-      @tasks = Task.find(:all)
+      @tasks = Task.find(:all, :include => [:task_actions])
       
       render :tasks_list
     end

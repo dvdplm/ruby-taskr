@@ -29,14 +29,14 @@ $tasks = $rest->get("/tasks.xml");
 //
 // Here's an example of how to print out all of the tasks as an HTML list:
 
-//echo "<ul>";
-//foreach ($tasks->task as $task) {
-//	echo "<li>".$task->name."</li>";
-//	echo "<ul>";
-//	echo "<li>execute ".$task->{'schedule-method'}." ".$task->{'schedule-when'}."</li>";
-//	echo "<li>created by ".$task->{'created-by'}." on ".$task->{'created-on'}."</li>";
-//}
-//echo "</ul>";
+echo "<ul>";
+foreach ($tasks->task as $task) {
+	echo "<li>".$task->name."</li>";
+	echo "<ul>";
+	echo "<li>execute ".$task->{'schedule-method'}." ".$task->{'schedule-when'}."</li>";
+	echo "<li>created by ".$task->{'created-by'}." on ".$task->{'created-on'}."</li>";
+}
+echo "</ul>";
 
 
 

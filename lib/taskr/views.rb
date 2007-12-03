@@ -24,7 +24,7 @@ module Taskr::Views
     CONTENT_TYPE = 'text/xml'
     
     def tasks_list
-      @tasks.to_xml(:root => 'tasks')
+      @tasks.to_xml(:root => 'tasks', :include => [:task_actions])
     end
     
     def view_task
@@ -64,7 +64,7 @@ module Taskr::Views
               tr do
                 td {a(:href => self/"tasks/#{t.id}") {strong{t.name}}}
                 td "#{t.schedule_method} #{t.schedule_when}"
-                td {t.last_triggered.ago if t.last_triggered}
+                td "#{distance_of_time_in_words(t.last_triggered, Time.now, true) if t.last_triggered} ago"
                 td t.scheduler_job_id
                 td t.created_on
                 td t.created_by
@@ -158,7 +158,7 @@ module Taskr::Views
             th "Triggered:"
             td do
               if @task.last_triggered
-                span @task.last_triggered.ago
+                span "#{distance_of_time_in_words(@task.last_triggered, Time.now, true)} ago"
                 span(:style => 'font-size: 8pt; color: #bbb'){"(#{@task.last_triggered})"}
               else
                 em "Not yet triggered"
