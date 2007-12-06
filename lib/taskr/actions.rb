@@ -14,7 +14,9 @@
 # along with Taskr.  If not, see <http://www.gnu.org/licenses/>.
 
 require 'openwfe/util/scheduler'
-require 'active_resource'
+
+#require 'active_resource'
+require 'restr'
 
 
 unless $LOG
@@ -128,60 +130,97 @@ module Taskr
       end
     end
     
-    class ActiveResource < Base
-      self.parameters = ['site', 'resource', 'action', 'parameters']
-      self.description = "Perform a REST call on a remote service using ActiveResource."
+#    class ActiveResource < Base
+#      self.parameters = ['site', 'resource', 'action', 'parameters']
+#      self.description = "Perform a REST call on a remote service using ActiveResource."
+#      
+#      def execute
+#        $LOG.debug self
+#        ::ActiveResource::Base.logger = $LOG
+#        ::ActiveResource::Base.logger.progname = (task ? task.to_s : self)
+#        
+#        eval %{
+#          class Proxy < ::ActiveResource::Base
+#            self.site = "#{parameters['site']}"
+#            self.collection_name = "#{parameters['resource'].pluralize}"
+#          end
+#        }
+#        
+#        begin
+#          case parameters['action']
+#          when 'create'
+#            obj = Proxy.new(parameters['parameters'])
+#            obj.save
+#          when 'update', "'update' action is not implemented"
+#            raise NotImplementedError
+#          when 'delete'
+#            Proxy.delete(parameters['parameters'])
+#          when 'find'
+#            raise NotImplementedError, "'find' action is not implemented"
+#          else
+#            raise ArgumentError, "unknown action #{parameters['action'].inspect}"
+#          end
+#        rescue ::ActiveResource::ServerError => e
+#          $LOG.error #{self} ERROR: #{e.methods.inspect}"
+#          raise e
+#        end
+#      end
+#    end
+#  
+#    class Howlr < ActiveResource
+#      self.parameters = ['site', 'from', 'recipients', 'subject', 'body']
+#      self.description = "Send a message through a Howlr service."
+#      
+#      def execute
+#        parameters['action'] = 'create'
+#        parameters['resource'] = 'message'
+#        parameters['parameters'] = {
+#          'from' => parameters['from'],
+#          'recipients' => parameters['recipients'],
+#          'subject' => parameters['subject'],
+#          'body' => parameters['body']
+#        }
+#        
+#        super
+#      end
+#    end
+  
+    class Rest < Base
+      self.parameters = ['method', 'url', 'params', 'username', 'password']
+      self.description = "Perform a REST call on a remote service."
       
       def execute
         $LOG.debug self
-        ::ActiveResource::Base.logger = $LOG
-        ::ActiveResource::Base.logger.progname = (task ? task.to_s : self)
         
-        eval %{
-          class Proxy < ::ActiveResource::Base
-            self.site = "#{parameters['site']}"
-            self.collection_name = "#{parameters['resource'].pluralize}"
-          end
-        }
+        auth = nil
         
-        begin
-          case parameters['action']
-          when 'create'
-            obj = Proxy.new(parameters['parameters'])
-            obj.save
-          when 'update', "'update' action is not implemented"
-            raise NotImplementedError
-          when 'delete'
-            Proxy.delete(parameters['parameters'])
-          when 'find'
-            raise NotImplementedError, "'find' action is not implemented"
-          else
-            raise ArgumentError, "unknown action #{parameters['action'].inspect}"
-          end
-        rescue ::ActiveResource::ServerError => e
-          $LOG.error #{self} ERROR: #{e.methods.inspect}"
-          raise e
+        if parameters['username']
+          auth = {}
+          auth['username'] = parameters['username'] if parameters['username']
+          auth['password'] = parameters['password'] if parameters['password']
         end
+        
+        Restr.logger = $LOG
+        Restr.do(parameters['method'], parameters['url'], parameters['params'], auth)
       end
     end
-  
-    class Howlr < ActiveResource
-      self.parameters = ['site', 'from', 'recipients', 'subject', 'body']
+    
+    class Howlr < Rest
+      self.parameters = ['url', 'from', 'recipients', 'subject', 'body', 'username', 'password']
       self.description = "Send a message through a Howlr service."
       
       def execute
-        parameters['action'] = 'create'
-        parameters['resource'] = 'message'
-        parameters['parameters'] = {
+        parameters['method'] = 'post'
+        parameters['params'] = {
           'from' => parameters['from'],
           'recipients' => parameters['recipients'],
           'subject' => parameters['subject'],
-          'body' => parameters['body']
+          'body' => parameters['body'],
+          'format' => 'XML'
         }
         
         super
       end
     end
-  
   end
 end

@@ -91,8 +91,9 @@ module Taskr::Views
         }
       end
       
-      form :method => 'post', :action => '/tasks.xml' do
-        html_scaffold do
+      
+      html_scaffold do
+        form :method => 'post', :action => "/tasks?format=#{@format}" do
           h1 "New Task"
           input :type => 'hidden', :name => '_method', :value => 'post'
           

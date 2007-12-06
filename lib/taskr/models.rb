@@ -80,6 +80,11 @@ module Taskr::Models
       return job_id
     end
     
+    def scheduler_job
+      return nil if scheduler_job_id.nil?
+      $SCHEDULER.get_job(scheduler_job_id)
+    end
+    
     def to_s
       "#<#{self.class}:#{self.id}>"
     end

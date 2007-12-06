@@ -141,7 +141,9 @@ module Taskr::Controllers
         @task.schedule! $scheduler
         
         if @task.save
-          @headers['Location'] = "/tasks/#{@task.id}?format=#{@format}"
+          location = "/tasks/#{@task.id}?format=#{@format}"
+          $LOG.debug "#{@task} saved successfuly. Setting Location header to #{location.inspect}."
+          @headers['Location'] = location
         end
         
         return render(:view_task)

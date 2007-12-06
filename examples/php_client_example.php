@@ -55,7 +55,7 @@ echo $task->{'task-actions'}->{'task-action'}[0]->{'action-class-name'};
 
 
 /**
-  Creating a new task
+  Creating a new task, to be executed every 10 seconds
  **/
 
 $data = array(

@@ -13,6 +13,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Taskr.  If not, see <http://www.gnu.org/licenses/>.
 
+$: << File.dirname(File.expand_path(__FILE__))
+
+# Try to load local versions of Picnic and Reststop if possible...
+$: << File.dirname(File.expand_path(__FILE__))+"/../../../picnic/lib"
+$: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/picnic/lib"
+$: << File.dirname(File.expand_path(__FILE__))+"/../../../reststop/lib"
+$: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/reststop/lib"
+
+# active_resource needs newer versions of active_support, but this conflicts
+# with active_record, so we need a newer version of that as well (yes, it's a mess) 
 $: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/activeresource/lib"
 $: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/activesupport/lib"
 $: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/activerecord/lib"
@@ -27,12 +37,10 @@ unless Object.method_defined? :gem
   alias gem require_gem
 end
 
-require '/home/URBACON/mzukowski/workspace/picnic/lib/picnic.rb'
-require 'camping'
+require 'picnic.rb'
 require 'camping/db'
 
-#gem 'reststop'
-require '~/workspace/reststop/lib/reststop'
+require 'reststop'
 
 gem 'openwferu-scheduler', '~> 0.9.16'
 require 'openwfe/util/scheduler'
