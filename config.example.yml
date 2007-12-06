@@ -91,10 +91,10 @@ database:
 # it permissions.
 # 
 # Set the level to DEBUG if you want more detailed logging. Other options are
-# INFO, WARN, and ERROR.
+# INFO, WARN, and ERROR (DEBUG is most verbose, ERROR is least).
 
 log:
   file: taskr.log
-  level: INFO
+  level: DEBUG
 #  file: /var/log/taskr.log
-#  level: DEBUG
+#  level: INFO
