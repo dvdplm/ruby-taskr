@@ -61,10 +61,20 @@ module Taskr::Views
           end
           tbody do
             @tasks.each do |t|
-              tr do
+              if t.next_trigger_time != :unknown && 
+                  t.next_trigger_time < Time.now
+                tr_css = "expired"
+              end
+              tr(:class => tr_css) do
                 td {a(:href => self/"tasks/#{t.id}") {strong{t.name}}}
                 td "#{t.schedule_method} #{t.schedule_when}"
-                td "#{distance_of_time_in_words(t.last_triggered, Time.now, true) if t.last_triggered} ago"
+                td do
+                  if t.last_triggered
+                    "#{distance_of_time_in_words(t.last_triggered, Time.now, true)} ago"
+                  else
+                    em "Not yet triggered"
+                  end
+                end
                 td t.scheduler_job_id
                 td t.created_on
                 td t.created_by

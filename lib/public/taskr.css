@@ -31,3 +31,7 @@ td {
 label {
     font-weight: bold;
 }
+
+tr.expired td {
+    color: #aaa;
+}

@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-
 # This file is part of Taskr.
 #
 # Taskr is free software: you can redistribute it and/or modify

@@ -15,6 +15,12 @@
 
 require 'camping/db'
 require 'openwfe/util/scheduler'
+require 'date'
+
+class OpenWFE::Scheduler
+  public :duration_to_f
+end
+
 
 module Taskr::Models
 
@@ -44,6 +50,14 @@ module Taskr::Models
         method = :schedule_every
       end
       
+      if method == :schedule_at || method == :schedule_in
+        t = next_trigger_time
+        if t < Time.now
+          $LOG.warn "Task #{name.inspect} will not be scheduled because its trigger time is in the past (#{t.inspect})."
+          return nil
+        end
+      end
+      
       $LOG.debug "Scheduling task #{name.inspect}: #{self.inspect}"
       
       if task_actions.length == 1
@@ -71,18 +85,40 @@ module Taskr::Models
         return false
       end
       
-      job_id = scheduler.send(method, schedule_when, :schedulable => action)
+      job_id = scheduler.send(method, t || schedule_when, :schedulable => action)
       
-      $LOG.debug "Task #{name.inspect} scheduled with job id #{job_id}"
-  
+      if job_id
+        $LOG.debug "Task #{name.inspect} scheduled with job id #{job_id}"
+      else
+        $LOG.error "Task #{name.inspect} was NOT scheduled!"
+        return nil
+      end
+      
       self.update_attribute(:scheduler_job_id, job_id)
+      if method == :schedule_at || method == :schedule_in
+        job = scheduler.get_job(job_id)
+        at = job.schedule_info
+        self.update_attribute(:schedule_when, at)
+        self.update_attribute(:schedule_method, 'at')
+      end
       
       return job_id
     end
     
-    def scheduler_job
-      return nil if scheduler_job_id.nil?
-      $SCHEDULER.get_job(scheduler_job_id)
+    def next_trigger_time
+      # TODO: need to figure out how to calulate trigger_time for these.. for now return :unknown
+      return :unknown unless schedule_method == 'at' || schedule_method == 'in'
+          
+      if schedule_method == 'in'
+        return (created_on || Time.now) + $scheduler.duration_to_f(schedule_when)
+      end
+      
+      # Time parsing code from Rails
+      time_hash = Date._parse(schedule_when)
+      time_hash[:sec_fraction] = ((time_hash[:sec_fraction].to_f % 1) * 1_000_000).to_i
+      time_array = time_hash.values_at(:year, :mon, :mday, :hour, :min, :sec, :sec_fraction)
+      # treat 0000-00-00 00:00:00 as nil
+      Time.send(Base.default_timezone, *time_array) rescue DateTime.new(*time_array[0..5]) rescue nil
     end
     
     def to_s

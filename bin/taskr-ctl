@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+
+# ---------------------------------------------------------------------
+# This file is part of Taskr (http://ruby-taskr.googlecode.com/).
+#
+# Taskr is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later verTaskr
+#
+# Taskr is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Taskr.  If not, see <http://www.gnu.org/licenses/>.
+# ---------------------------------------------------------------------
+
+if File.exists?(picnic = File.expand_path(File.dirname(File.expand_path(__FILE__))+'/../vendor/picnic/lib'))
+  $: << picnic
+elsif File.exists?(picnic = File.expand_path(File.dirname(File.expand_path(__FILE__))+'/../../picnic/lib'))
+  $: << picnic
+else
+  require 'rubygems'
+end
+
+require 'picnic/service_control'
+
+ctl = Picnic::ServiceControl.new('taskr')
+
+ctl.handle_cli_input
