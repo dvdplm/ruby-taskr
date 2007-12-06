@@ -1,0 +1,100 @@
+# This is a configuration file for the Taskr RESTful scheduler daemon.
+
+# AN IMPORTANT NOTE ABOUT YAML CONFIGURATION FILES:
+# !!! Be sure to use spaces instead of tabs for indentation, as YAML is very
+# !!! sensitive to white-space inconsistencies!
+
+##### HTTP SERVER #####################################################################
+
+# Under what HTTP environment are you running the Fluxr server? The following methods
+# are currently supported:
+#
+# webrick -- simple stand-alone HTTP server; this is the default method
+# mongrel -- fast stand-alone HTTP server; much faster than webrick, but 
+#            you'll have to first install the mongrel gem
+# 
+
+### webrick example
+
+server: webrick
+port: 7008
+
+### webrick SSL example
+
+#server: webrick
+#port: 443
+#ssl_cert: /path/to/your/ssl.pem
+
+# if the private key is separate from cert:
+#ssl_key: /path/to/your/private_key.pem
+
+
+### mongrel example
+
+#server: mongrel
+#port: 7008
+
+# It is possible to run mongrel over SSL, but you will need to use a reverse proxy
+# (try Pound or Apache).
+
+
+##### DATABASE ########################################################################
+
+# Taskr needs a database to persist its state between restarts.
+# 
+# By default, we use MySQL, since it is widely used and does not require any additional
+# ruby libraries besides ActiveRecord.
+#
+# With MySQL, your config would be something like the following:
+# (be sure to create the taskr database in MySQL beforehand,
+#   i.e. `mysqladmin -u root create taskr`)
+
+database:
+  adapter: mysql
+  database: taskr
+  username: root
+  password: 
+  host: localhost
+
+
+# Instead of MySQL you can use SQLite3, PostgreSQL, MSSQL, or anything else supported 
+# by ActiveRecord.
+#
+# If you do not have a database server available, you can try using the SQLite3
+# back-end. SQLite3 does not require it's own server. Instead all data is stored
+# in local files. For SQLite3, your configuration would look something like the
+# following (don't forget to install the 'sqlite3-ruby' gem first!):
+#
+#database:
+#  adapter: sqlite3
+#  dbfile: /var/lib/taskr.db
+
+
+##### AUTHENTICATION ##################################################################
+
+# Taskr supports basic HTTP authentication. Uncomment this if you want Taskr to demand
+# a username and password from clients. Note that this isn't very secure unless
+# you run Taskr over HTTPS (see the webrick SSL example above).
+
+#authentication:
+#  username: taskr
+#  password: task!
+
+
+##### LOGGING #########################################################################
+
+# This log is where you'll want to look in case of problems. 
+# 
+# By default, we will try to create a log file named 'taskr.log' in the current 
+# directory (the directory where you're running taskr from). A better place to put 
+# the log is in /var/log, but you will have to run taskr as root or otherwise give 
+# it permissions.
+# 
+# Set the level to DEBUG if you want more detailed logging. Other options are
+# INFO, WARN, and ERROR.
+
+log:
+  file: taskr.log
+  level: INFO
+#  file: /var/log/taskr.log
+#  level: DEBUG
