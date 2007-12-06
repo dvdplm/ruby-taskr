@@ -190,10 +190,7 @@ module Taskr
       self.description = "Perform a REST call on a remote service."
       
       def execute
-        $LOG.debug self
-        
         auth = nil
-        
         if parameters['username']
           auth = {}
           auth['username'] = parameters['username'] if parameters['username']

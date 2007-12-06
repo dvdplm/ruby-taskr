@@ -23,14 +23,16 @@ $: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/reststop/lib"
 
 # active_resource needs newer versions of active_support, but this conflicts
 # with active_record, so we need a newer version of that as well (yes, it's a mess) 
-$: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/activeresource/lib"
-$: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/activesupport/lib"
-$: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/activerecord/lib"
-require 'active_support'
-require 'active_resource'
-require 'active_record'
+#$: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/activeresource/lib"
+#$: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/activesupport/lib"
+#$: << File.dirname(File.expand_path(__FILE__))+"/../../vendor/activerecord/lib"
 
 require 'rubygems'
+
+require 'active_support'
+#require 'active_resource'
+require 'active_record'
+
 
 # make things backwards-compatible for rubygems < 0.9.0
 unless Object.method_defined? :gem

@@ -38,13 +38,6 @@ end
 
 include Taskr::Models
 
-class TestIt
-  include OpenWFE::Schedulable
-  def trigger(trigger_args)
-    puts "HEY! #{trigger_args.inspect}"
-  end
-end
-
 def Taskr.create
   $LOG.info "Initializing Taskr..."
   Taskr::Models::Base.establish_connection(Taskr::Conf.database)
