@@ -41,6 +41,18 @@ def Taskr.create
   Taskr::Models::Base.establish_connection(Taskr::Conf.database)
   Taskr::Models.create_schema
   
+  if self::Conf[:external_actions]
+    if self::Conf[:external_actions].kind_of? Array
+      external_actions = self::Conf[:external_actions]
+    else
+      external_actions = [self::Conf[:external_actions]]
+    end
+    external_actions.each do |f|
+      $LOG.info "Loading additional action definitions from #{self::Conf[:external_actions]}..."
+      require f
+    end
+  end
+  
   $LOG.info "Starting OpenWFE Scheduler..."
   
   $scheduler = OpenWFE::Scheduler.new

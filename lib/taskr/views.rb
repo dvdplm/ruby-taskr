@@ -121,7 +121,7 @@ module Taskr::Views
                 option(:value => method) {method}
               end
             end
-            input :type => 'text', :name => 'schedule_when', :size => 15
+            input :type => 'text', :name => 'schedule_when', :size => 30
           end
           
           action_form
