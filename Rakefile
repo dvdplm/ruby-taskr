@@ -53,6 +53,6 @@ hoe = Hoe.new(GEM_NAME, VERS) do |p|
   #p.extra_deps     - An array of rubygem dependencies.
   #p.spec_extras    - A hash of extra values to set in the gemspec.
   
-  p.extra_deps = ['picnic', ['reststop',  '~>0.1.0.24']]
+  p.extra_deps = ['picnic', ['reststop',  '~>0.1.0.24'], 'openwferu-scheduler']
   p.spec_extras = {:executables => ['taskr', 'taskr-ctl']}
 end

@@ -17,7 +17,7 @@
 ### webrick example
 
 server: webrick
-port: 7008
+port: 7007
 
 ### webrick SSL example
 
@@ -32,7 +32,7 @@ port: 7008
 ### mongrel example
 
 #server: mongrel
-#port: 7008
+#port: 7007
 
 # It is possible to run mongrel over SSL, but you will need to use a reverse proxy
 # (try Pound or Apache).
