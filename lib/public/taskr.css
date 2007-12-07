@@ -35,3 +35,7 @@ label {
 tr.expired td {
     color: #aaa;
 }
+
+tr.error td {
+    background-color: #faa;
+}

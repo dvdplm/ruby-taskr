@@ -61,11 +61,11 @@ module Taskr::Views
           end
           tbody do
             @tasks.each do |t|
-              if t.next_trigger_time != :unknown && 
-                  t.next_trigger_time < Time.now
-                tr_css = "expired"
-              end
-              tr(:class => tr_css) do
+              tr_css = []
+              tr_css << "error" if t.last_triggered_error
+              tr_css << "expired" if t.next_trigger_time != :unknown && t.next_trigger_time < Time.now
+              
+              tr(:class => tr_css.join(" ")) do
                 td {a(:href => self/"tasks/#{t.id}") {strong{t.name}}}
                 td "#{t.schedule_method} #{t.schedule_when}"
                 td do
@@ -179,6 +179,14 @@ module Taskr::Views
                 em "Not yet triggered"
               end
             end 
+          end
+          if @task.last_triggered_error
+            th "Error:"
+            td(:style => 'color: #e00;') do
+              strong "#{@task.last_triggered_error[:type]}"
+              br
+              span @task.last_triggered_error[:message]
+            end
           end
           tr do
             th "Actions:"

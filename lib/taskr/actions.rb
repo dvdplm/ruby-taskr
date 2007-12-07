@@ -57,11 +57,15 @@ module Taskr
       
       def trigger(trigger_args = {})
         begin
+          $LOG.info("Executing task #{self.task.name}")
           execute
           task.update_attribute(:last_triggered, Time.now)
+          task.update_attribute(:last_triggered_error, nil)
         rescue => e
-          puts "ERROR: #{e.inspect}"
-          puts e.stacktrace
+          $LOG.error(e)
+          $LOG.debug(e.backtrace.to_s)
+          task.update_attribute(:last_triggered, Time.now)
+          task.update_attribute(:last_triggered_error, {:type => e.class.to_s, :message => e.message})
           raise e
         end
       end
@@ -83,14 +87,17 @@ module Taskr
       
       def trigger(trigger_args = {})
         begin
+          $LOG.info("Executing task #{self.name}")
           actions.each do |a|
             a.execute
           end
           # TODO: maybe we should store last_triggered time on a per-action basis?
           task.update_attribute(:last_triggered, Time.now)
         rescue => e
-          puts "ERROR: #{e.inspect}"
-          puts e.stacktrace
+          $LOG.error(e)
+          $LOG.debug("#{e.stacktrace}")
+          task.update_attribute(:last_triggered, Time.now)
+          task.update_attribute(:last_triggered_error, e)
           raise e
         end
       end

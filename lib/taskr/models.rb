@@ -30,6 +30,7 @@ module Taskr::Models
       :dependent => :destroy
     
     serialize :schedule_options
+    serialize :last_triggered_error
     
     validates_presence_of :schedule_method
     validates_presence_of :schedule_when
@@ -190,7 +191,7 @@ module Taskr::Models
     end
   end
 
-  class CreateTaskr < V 0.1
+  class CreateTaskr < V 0.01
     def self.up
       $LOG.info("Migrating database")
       
@@ -205,6 +206,7 @@ module Taskr::Models
         
         t.column :scheduler_job_id, :integer
         t.column :last_triggered, :datetime
+        t.column :last_triggered_error, :text
       end
       
       add_index :taskr_tasks, [:name], :unique => true
