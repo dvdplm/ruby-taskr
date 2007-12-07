@@ -138,7 +138,7 @@ module Taskr::Controllers
         end
       
         
-        @task.schedule! $scheduler
+        @task.schedule! Taskr.scheduler
         
         if @task.save
           location = "/tasks/#{@task.id}?format=#{@format}"
@@ -156,7 +156,7 @@ module Taskr::Controllers
     
     def destroy(id)
       @task = Task.find(id)
-      $scheduler.unschedule(@task.scheduler_job_id) if @task.scheduler_job_id
+      Taskr.scheduler.unschedule(@task.scheduler_job_id) if @task.scheduler_job_id
       @task.destroy
       return redirect('/tasks')
     end

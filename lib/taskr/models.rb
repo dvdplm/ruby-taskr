@@ -110,7 +110,7 @@ module Taskr::Models
       return :unknown unless schedule_method == 'at' || schedule_method == 'in'
           
       if schedule_method == 'in'
-        return (created_on || Time.now) + $scheduler.duration_to_f(schedule_when)
+        return (created_on || Time.now) + Taskr.scheduler.duration_to_f(schedule_when)
       end
       
       # Time parsing code from Rails

@@ -22,6 +22,13 @@ Taskr.picnic!
 require 'taskr/controllers'
 
 module Taskr
+  @@scheduler = nil
+  def self.scheduler=(scheduler)
+    @@scheduler = scheduler
+  end
+  def self.scheduler
+    @@scheduler
+  end
 end
 
 require 'taskr/actions'
@@ -52,19 +59,25 @@ def Taskr.create
       require f
     end
   end
-  
+end
+
+def Taskr.prestart
   $LOG.info "Starting OpenWFE Scheduler..."
   
-  $scheduler = OpenWFE::Scheduler.new
-  $scheduler.start
+  Taskr.scheduler = OpenWFE::Scheduler.new
+  Taskr.scheduler.start
+  
+  $LOG.debug "Scheduler is: #{Taskr.scheduler.inspect}"
   
   tasks = Taskr::Models::Task.find(:all)
   
   $LOG.info "Scheduling #{tasks.length} persisted tasks..."
   
   tasks.each do |t|
-    t.schedule! $scheduler
+    t.schedule! Taskr.scheduler
   end
+  
+  Taskr.scheduler.instance_variable_get(:@scheduler_thread).run
 end
 
 Taskr.start_picnic

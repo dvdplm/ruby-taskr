@@ -82,6 +82,10 @@ module Taskr::Views
             end
           end
         end
+        
+        p do
+          Taskr.scheduler.inspect
+        end
       end
     end
     
@@ -213,6 +217,8 @@ module Taskr::Views
     
     def action_parameters_form
       @num ||= 0
+      
+      p {em @action.description}
       
       @action.parameters.each do |param|
         p do
