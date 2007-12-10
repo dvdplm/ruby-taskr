@@ -36,6 +36,10 @@ tr.expired td {
     color: #aaa;
 }
 
+tr.expired td.job-id {
+    text-decoration: line-through;
+}
+
 tr.error td {
     background-color: #faa;
 }

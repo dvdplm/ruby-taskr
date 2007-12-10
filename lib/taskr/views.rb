@@ -75,7 +75,7 @@ module Taskr::Views
                     em "Not yet triggered"
                   end
                 end
-                td t.scheduler_job_id
+                td(:class => "job-id") {t.scheduler_job_id}
                 td t.created_on
                 td t.created_by
               end
@@ -83,9 +83,8 @@ module Taskr::Views
           end
         end
         
-        p do
-          Taskr.scheduler.inspect
-        end
+        br
+        div {scheduler_status}
       end
     end
     
@@ -212,6 +211,19 @@ module Taskr::Views
           end
         end
       end
+    end
+    
+    def scheduler_status
+      s = Taskr.scheduler
+      h3(:style => "margin-bottom: 8px;") {"Scheduler Status"}
+      strong "Running?"
+      span(:style => 'margin-right: 10px') {s.instance_variable_get(:@stopped) ? "NO" : "Yes"}
+      strong "Precision:"
+      span(:style => 'margin-right: 10px') {"#{s.instance_variable_get(:@precision)}s"}
+      strong "Pending Jobs:"
+      span(:style => 'margin-right: 10px') {s.instance_variable_get(:@pending_jobs).size}
+      strong "Thread Status:"
+      span(:style => 'margin-right: 10px') {s.instance_variable_get(:@scheduler_thread).status}
     end
     
     def action_list
