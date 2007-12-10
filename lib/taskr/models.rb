@@ -53,6 +53,7 @@ module Taskr::Models
       
       if method == :schedule_at || method == :schedule_in
         t = next_trigger_time
+        method = :schedule_at
         if t < Time.now
           $LOG.warn "Task #{name.inspect} will not be scheduled because its trigger time is in the past (#{t.inspect})."
           return nil
