@@ -20,8 +20,8 @@ HOMEPATH = "http://#{RUBYFORGE_PROJECT}.rubyforge.org"
 
 
 NAME = "taskr"
-#REV = nil
-REV = `svn info`[/Revision: (\d+)/, 1] rescue nil
+REV = nil
+#REV = `svn info`[/Revision: (\d+)/, 1] rescue nil
 VERS = ENV['VERSION'] || (Taskr::VERSION::STRING + (REV ? ".#{REV}" : ""))
                           CLEAN.include ['**/.*.sw?', '*.gem', '.config']
 RDOC_OPTS = ['--quiet', '--title', "taskr documentation",
@@ -53,6 +53,6 @@ hoe = Hoe.new(GEM_NAME, VERS) do |p|
   #p.extra_deps     - An array of rubygem dependencies.
   #p.spec_extras    - A hash of extra values to set in the gemspec.
   
-  p.extra_deps = ['picnic', ['reststop',  '~>0.1.0.24'], 'openwferu-scheduler']
+  p.extra_deps = ['picnic', ['reststop',  '~>0.2.0'], 'openwferu-scheduler']
   p.spec_extras = {:executables => ['taskr', 'taskr-ctl']}
 end
