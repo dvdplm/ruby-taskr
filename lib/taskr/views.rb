@@ -46,7 +46,7 @@ module Taskr::Views
       html_scaffold do
         h1 {"Tasks"}
         
-        p{a(:href => self/'tasks/new') {"Schedule New Task"}}
+        p{a(:href => R(Taskr::Controllers::Tasks, 'new')) {"Schedule New Task"}}
         
         table do
           thead do
@@ -66,7 +66,7 @@ module Taskr::Views
               tr_css << "expired" if t.next_trigger_time != :unknown && t.next_trigger_time < Time.now
               
               tr(:class => tr_css.join(" ")) do
-                td {a(:href => self/"tasks/#{t.id}") {strong{t.name}}}
+                td {a(:href => R(t)) {strong{t.name}}}
                 td "#{t.schedule_method} #{t.schedule_when}"
                 td do
                   if t.last_triggered
@@ -89,24 +89,23 @@ module Taskr::Views
     end
     
     def new_task
-      script(:type => 'text/javascript') do
-        %{
-          function show_action_parameters(num) {
-            new Ajax.Updater('parameters_'+num, '/actions', {
-                method: 'get',
-                parameters: { 
-                  id: $F('action_class_name_'+num), 
-                  action: 'parameters_form',
-                  num: num
-                }
-            });
-          }
-        }
-      end
-      
-      
       html_scaffold do
-        form :method => 'post', :action => "/tasks?format=#{@format}" do
+        script(:type => 'text/javascript') do
+          %{
+            function show_action_parameters(num) {
+              new Ajax.Updater('parameters_'+num, '/actions', {
+                  method: 'get',
+                  parameters: { 
+                    id: $F('action_class_name_'+num), 
+                    action: 'parameters_form',
+                    num: num
+                  }
+              });
+            }
+          }
+        end
+        
+        form :method => 'post', :action => self/"/tasks?format=#{@format}" do
           h1 "New Task"
           input :type => 'hidden', :name => '_method', :value => 'post'
           
@@ -135,7 +134,7 @@ module Taskr::Views
           script(:type => 'text/javascript') do
             %{
               Event.observe('add_action', 'click', function() {
-                new Ajax.Updater('add_action', '/actions', {
+                new Ajax.Updater('add_action', '#{self/'/actions'}', {
                     method: 'get',
                     parameters: { action: 'new', num: $$('select.action_class_name').size() },
                     insertion: Insertion.Before
@@ -156,7 +155,7 @@ module Taskr::Views
           button(:type => 'submit', :value => 'delete') {"Delete"}
         end
         br
-        a(:href => '/tasks') {"Back to Task List"}
+        a(:href => self/'tasks') {"Back to Task List"}
         
         h1 "Task #{@task.id}"
         table do
