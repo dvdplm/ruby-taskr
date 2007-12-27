@@ -17,18 +17,25 @@ task = Task.find(123)
 # Print the Task's name
 puts task.name
 
-# Create a new Task to be executed every 10 seconds
+# Create a new Task with two actions to be executed every 10 seconds
 task = Task.new
 task.name = "My Example Task"
 task.schedule_method = 'every'
 task.schedule_when = '10s'
 task.actions = [
-    {:action_class_name => 'Ruby', :code => "puts 'Hello World!'"},
-    {:action_class_name => 'Ruby', :code => "puts 'Goodbye!'"}
+    {:action_class_name => 'Ruby', :code => "puts 'Sending message through Howlr...'"},
+    {:action_class_name => 'Howlr',
+      :subject => "Testing Howlr",
+      :body => "Just testing! Please ignore this.",
+      :from => "joe@example.foo",
+      :recipients => "sally@example.foo; bob@example.foo",
+      :url => "http://howlr.example.foo/messages.xml",
+      :username => 'howlr',
+      :password => 'howl!'}
   ]
   
-# Save the new Task -- the Task is not scheduled for execution until
-# it is saved.
+# Save the new Task; saving the Task commits it to the Taskr server
+# and schedules it for execution.
 task.save
 
 # Delete the Task we just created
