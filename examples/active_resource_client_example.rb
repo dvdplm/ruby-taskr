@@ -31,6 +31,9 @@ task.actions = [
 # it is saved.
 task.save
 
-# Deleting the task we just created
-id = task.id
+# Delete the Task we just created
+task.destroy
+
+# Or delete a Task with some arbitrary id
+id = 123
 Task.delete(id)
