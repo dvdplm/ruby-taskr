@@ -79,9 +79,15 @@ $data = array(
 	'schedule_when' => "5m",
 	'actions' => array(
 		array('action_class_name' => "Ruby",
-			'code' => 'puts "Hello"'),
-		array('action_class_name' => "Ruby",
-			'code' => 'puts "Goodbye"')
+			'code' => 'puts "Sending a message through Howlr..."'),
+		array('action_class_name' => "Howlr",
+			'url' => "http://howlr.example.foo/messages.xml",
+			'subject' => "Testing",
+			'from' => "joe@example.foo",
+			'recipients' => "sally@example.foo",
+			'body' => "Just testing!",
+			'username' => "howlr",
+			'password' => "howl!")
 	)
 );
 
@@ -108,7 +114,7 @@ if ($task) {
 /**
   Deleting the tasks we just created
 **/
-print_r($task1);
+
 $id1 = $task1->id;
 $rest->delete("/tasks/$id1.xml");
 

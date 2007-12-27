@@ -1,3 +1,10 @@
+=== In Progress...
+
+* 'action(s)' parameter is now a bit looser. You can use
+  'action' or 'actions' interchangably, whether you're scheduling
+  multiple actions or not.
+* Fixed some routing problems in the HTML views.
+
 === 0.1.0 :: 2007-12-21
 
 * First public release.
