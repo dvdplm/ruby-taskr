@@ -24,11 +24,11 @@ module Taskr::Views
     CONTENT_TYPE = 'text/xml'
     
     def tasks_list
-      @tasks.to_xml(:root => 'tasks', :include => [:task_actions])
+      @tasks.to_xml(:root => 'tasks')#, :include => [:task_actions])
     end
     
     def view_task
-      @task.to_xml(:root => 'task', :include => [:task_actions])
+      @task.to_xml(:root => 'task')#, :include => [:task_actions])
     end
     
     def create_task_result
@@ -40,6 +40,8 @@ module Taskr::Views
   end
   
   module HTML
+    include Taskr::Controllers
+    
     CONTENT_TYPE = 'text/html'
     
     def tasks_list
@@ -93,7 +95,7 @@ module Taskr::Views
         script(:type => 'text/javascript') do
           %{
             function show_action_parameters(num) {
-              new Ajax.Updater('parameters_'+num, '/actions', {
+              new Ajax.Updater('parameters_'+num, '#{R(Actions)}', {
                   method: 'get',
                   parameters: { 
                     id: $F('action_class_name_'+num), 
@@ -134,9 +136,9 @@ module Taskr::Views
           script(:type => 'text/javascript') do
             %{
               Event.observe('add_action', 'click', function() {
-                new Ajax.Updater('add_action', '#{self/'/actions'}', {
+                new Ajax.Updater('add_action', '#{R(Actions, :new)}', {
                     method: 'get',
-                    parameters: { action: 'new', num: $$('select.action_class_name').size() },
+                    parameters: { num: $$('select.action_class_name').size() },
                     insertion: Insertion.Before
                 });
                 return false;
@@ -155,7 +157,7 @@ module Taskr::Views
           button(:type => 'submit', :value => 'delete') {"Delete"}
         end
         br
-        a(:href => self/'tasks') {"Back to Task List"}
+        a(:href => R(Tasks, :list)) {"Back to Task List"}
         
         h1 "Task #{@task.id}"
         table do
