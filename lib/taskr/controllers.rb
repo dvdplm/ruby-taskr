@@ -98,7 +98,7 @@ module Taskr::Controllers
             actions << a
           end
         else
-          actions = actions_data[:action]
+          actions = actions_data[:action] || actions_data[:actions] || actions_data
         end
         
         actions = [actions] unless actions.kind_of? Array
@@ -158,7 +158,7 @@ module Taskr::Controllers
       @task = Task.find(id)
       Taskr.scheduler.unschedule(@task.scheduler_job_id) if @task.scheduler_job_id
       @task.destroy
-      return redirect('/tasks')
+      return redirect(R(Tasks, :list))
     end
   end
 end
