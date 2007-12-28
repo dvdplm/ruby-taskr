@@ -210,12 +210,16 @@ module Taskr
     end
     
     class Howlr < Rest
-      self.parameters = ['url', 'from', 'recipients', 'subject', 'body', 'username', 'password']
+      self.parameters = ['url', 'from', 'recipients', 'subject', 'body', 'username', 'password', 'content_type']
       self.description = "Send a message through a Howlr service."
       
       def execute
+        content_type = parameters['content_type']
+        content_type = 'text/plain' if content_type.blank?
+        
         parameters['method'] = 'post'
         parameters['params'] = {
+          'content_type' => content_type,
           'from' => parameters['from'],
           'recipients' => parameters['recipients'],
           'subject' => parameters['subject'],
