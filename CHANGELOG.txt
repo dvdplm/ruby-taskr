@@ -1,9 +1,13 @@
 === In Progress...
 
-* 'action(s)' parameter is now a bit looser. You can use
+* The Howlr action now takes an optional content_type parameter
+  to allow for sending out HTML-formatted messages.
+* REST API: 'action(s)' parameter is now a bit looser. You can use
   'action' or 'actions' interchangably, whether you're scheduling
   multiple actions or not.
 * Fixed some routing problems in the HTML views.
+* The ActiveResource and PHP examples have been updated with
+  some more illustrative code and better explanations.
 
 === 0.1.0 :: 2007-12-21
 
