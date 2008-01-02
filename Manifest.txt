@@ -20,6 +20,15 @@ lib/taskr/models.rb
 lib/taskr/version.rb
 lib/taskr/views.rb
 setup.rb
+taskr4rails/LICENSE.txt
+taskr4rails/README
+taskr4rails/Rakefile
+taskr4rails/init.rb
+taskr4rails/install.rb
+taskr4rails/lib/taskr4rails_controller.rb
+taskr4rails/tasks/taskr4rails_tasks.rake
+taskr4rails/test/taskr4rails_test.rb
+taskr4rails/uninstall.rb
 test.rb
 test/taskr_test.rb
 test/test_helper.rb

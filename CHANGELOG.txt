@@ -1,13 +1,19 @@
-=== In Progress...
+=== 0.2.0 :: 2008-01-02
 
+* Added Taskr4rails action and accompanying Rails plugin for
+  tasks that execute code on a remote Rails server. See
+  http://code.google.com/p/ruby-taskr/wiki/Taskr4rails for
+  details.
 * The Howlr action now takes an optional content_type parameter
   to allow for sending out HTML-formatted messages.
-* REST API: 'action(s)' parameter is now a bit looser. You can use
-  'action' or 'actions' interchangably, whether you're scheduling
-  multiple actions or not.
+* Change to REST API: the 'action(s)' parameter is now a bit looser. 
+  You can use 'action' or 'actions' interchangeably, whether you're 
+  scheduling multiple actions or just one.
 * Fixed some routing problems in the HTML views.
 * The ActiveResource and PHP examples have been updated with
   some more illustrative code and better explanations.
+* Misc bugs fixed while writing extensive documentation. See
+  wiki pages at http://code.google.com/p/ruby-taskr/w/list.
 
 === 0.1.0 :: 2007-12-21
 
