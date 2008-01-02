@@ -1,7 +1,7 @@
-=== 0.2.0 :: 2008-01-02
+=== 0.2.0 :: 2008-01-03
 
 * Added Taskr4rails action and accompanying Rails plugin for
-  tasks that execute code on a remote Rails server. See
+  executing code on a remote Rails server. See
   http://code.google.com/p/ruby-taskr/wiki/Taskr4rails for
   details.
 * The Howlr action now takes an optional content_type parameter
