@@ -230,5 +230,22 @@ module Taskr
         super
       end
     end
+    
+    class Taskr4rails < Base
+      self.parameters = ['url', 'auth', 'ruby_code', 'shell_command']
+      self.description = "Executes code on a remote Rails server via the taskr4rails plugin."
+      
+      def execute
+        data = {
+          :auth => parameters['auth'],
+          :ruby_code => parameters['ruby_code'],
+          :shell_command => parameters['shell_command']
+        }
+        
+        
+        Restr.logger = $LOG
+        Restr.post(parameters['url'], data)
+      end
+    end
   end
 end
