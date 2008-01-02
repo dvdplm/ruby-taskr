@@ -245,7 +245,7 @@ module Taskr::Views
         p do
           label param
           br
-          input :type => 'textarea', :name => "action[#{@num}][#{param}]", :size => 40
+          input :type => 'text', :name => "action[#{@num}][#{param}]", :size => 50
         end
       end
     end
