@@ -1,4 +1,17 @@
-=== LICENSE ===
+= Taskr
+
+Taskr is a stand-alone HTTP daemon, providing a cron-like networked scheduling 
+service. Tasks are created and managed via a REST calls over HTTP, allowing 
+other REST-aware services to schedule and manage jobs.
+
+
+Please see Taskr's Google Code site for further information:
+
+http://code.google.com/p/ruby-taskr/
+
+
+
+== LICENSE
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
