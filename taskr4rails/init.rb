@@ -1,1 +1,1 @@
-# Include hook code here
+require 'taskr4rails_controller'

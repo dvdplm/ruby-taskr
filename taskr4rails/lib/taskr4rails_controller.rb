@@ -1,19 +1,19 @@
 class Taskr4railsController < ActionController::Base
   
-  def index
+  def execute
     unless Object.const_defined?("TASKR4RAILS_AUTH")
-      render :text => "The Taskr4rails receiver cannot be used until TASKR4RAILS_AUTH is defined.", 
+      render :text => "The taskr4rails receiver cannot be used until TASKR4RAILS_AUTH is defined. See http://code.google.com/p/ruby-taskr/wiki/Taskr4rails for help.", 
         :status => 500
       return false
     end
     
     unless request.post?
-      render :text => "This is the Taskr4rails receiver. It responds only to POST requests.", 
+      render :text => "This is the taskr4rails receiver. It responds only to POST requests.", 
         :status => 405
       return false
     end
     
-    if Object.const_defined("TASKR4RAILS_ALLOWED_HOSTS")
+    if Object.const_defined?("TASKR4RAILS_ALLOWED_HOSTS")
       ok = TASKR4RAILS_ALLOWED_HOSTS.any? do |h|
         if h.kind_of? Regexp
           h =~ request.remote_addr
@@ -35,8 +35,17 @@ class Taskr4railsController < ActionController::Base
       return false
     end
     
-    eval params[:code] if params[:code]
-    `#{params[:script]}` if params[:script]
+    out = ""
+    begin
+      out << (eval(params[:ruby_code]) || "") if params[:ruby_code]
+      out << (`cd #{RAILS_ROOT}; #{params[:shell_command]}` || "") if params[:shell_command]
+      err = false
+    rescue => e
+      out << e
+      err = true
+    end
+    
+    render :text => out, :status => (err ? 500 : 200)
   end
   
 end
