@@ -65,10 +65,6 @@ module Taskr::Controllers
     
     def create
       begin
-        puts @input.class
-        puts @input.to_xml if @input.kind_of?(XmlSimple)
-        puts @input.inspect
-        
         # the "0" is for compatibility with PHP's Zend_Rest_Client
         task_data = @input[:task] || @input["0"] || @input
           
@@ -156,7 +152,10 @@ module Taskr::Controllers
     
     def destroy(id)
       @task = Task.find(id)
-      Taskr.scheduler.unschedule(@task.scheduler_job_id) if @task.scheduler_job_id
+      if @task.scheduler_job_id
+        $LOG.debug "Unscheduling task #{@task}..."
+        Taskr.scheduler.unschedule(@task.scheduler_job_id)
+      end
       @task.destroy
       return redirect(R(Tasks, :list))
     end

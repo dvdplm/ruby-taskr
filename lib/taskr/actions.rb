@@ -62,10 +62,13 @@ module Taskr
           task.update_attribute(:last_triggered, Time.now)
           task.update_attribute(:last_triggered_error, nil)
         rescue => e
+          puts
           $LOG.error(e)
-          $LOG.debug(e.backtrace.to_s)
+          $LOG.debug(e.backtrace.join($/))
+          details = e.message
+          details += "\n\n#{$LAST_ERROR_BODY}" if $LAST_ERROR_BODY # dumb way of reading Restr errors... Restr needs to be fixed
           task.update_attribute(:last_triggered, Time.now)
-          task.update_attribute(:last_triggered_error, {:type => e.class.to_s, :message => e.message})
+          task.update_attribute(:last_triggered_error, {:type => e.class.to_s, :message => details})
           raise e
         end
       end
