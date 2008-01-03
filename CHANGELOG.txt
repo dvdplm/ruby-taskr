@@ -6,6 +6,9 @@
   details.
 * The Howlr action now takes an optional content_type parameter
   to allow for sending out HTML-formatted messages.
+* Better error reporting for Restr-based actions. The remote server's
+  resposne body is now included in Taskr's error report and the 
+  remote output is printed to the log more cleanly.
 * Change to REST API: the 'action(s)' parameter is now a bit looser. 
   You can use 'action' or 'actions' interchangeably, whether you're 
   scheduling multiple actions or just one.
