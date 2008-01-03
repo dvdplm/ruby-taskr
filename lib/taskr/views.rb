@@ -170,6 +170,10 @@ module Taskr::Views
             td "#{@task.schedule_method} #{@task.schedule_when}"
           end
           tr do
+            th "Job ID:"
+            td @task.scheduler_job_id
+          end
+          tr do
             th "Triggered:"
             td do
               if @task.last_triggered
@@ -185,7 +189,7 @@ module Taskr::Views
             td(:style => 'color: #e00;') do
               strong "#{@task.last_triggered_error[:type]}"
               br
-              span @task.last_triggered_error[:message]
+              pre @task.last_triggered_error[:message]
             end
           end
           tr do
