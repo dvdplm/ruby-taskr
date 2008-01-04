@@ -35,17 +35,23 @@ class Taskr4railsController < ActionController::Base
       return false
     end
     
-    out = ""
+    io = StringIO.new
+    prev_stdout, prev_stderr = $stdout, $stderr
+    $stdout = io
+    $stderr = io
     begin
-      out << (eval(params[:ruby_code]) || "") if params[:ruby_code]
-      out << (`cd #{RAILS_ROOT}; #{params[:shell_command]}` || "") if params[:shell_command]
+      eval(params[:ruby_code]) if params[:ruby_code]
+      #output << (`cd #{RAILS_ROOT}; #{params[:shell_command]}` || "") if params[:shell_command]
       err = false
     rescue => e
-      out << e
+      output << "#{e.class}: #{e}\n\nBACKTRACE:\n#{e.backtrace.join("\n")}"
       err = true
     end
+    $stdout = prev_stdout
+    $stderr = prev_stderr
+    output = io.read(nil)
     
-    render :text => out, :status => (err ? 500 : 200)
+    render :text => output, :status => (err ? 500 : 200)
   end
   
 end
