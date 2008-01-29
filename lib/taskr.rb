@@ -21,6 +21,16 @@ Taskr.picnic!
 
 require 'taskr/controllers'
 
+
+require 'camping/session'
+module Taskr
+  include Camping::Session
+end
+
+if Taskr::Conf[:authentication]
+  Taskr.authenticate_using(Taskr::Conf[:authentication][:method] || :basic)
+end
+
 module Taskr
   @@scheduler = nil
   def self.scheduler=(scheduler)
@@ -39,6 +49,7 @@ require 'taskr/controllers'
 
 module Taskr
   include Taskr::Models
+  include Camping::Session
 end
 
 include Taskr::Models
@@ -59,6 +70,7 @@ def Taskr.create
       require f
     end
   end
+  Camping::Models::Session.create_schema
 end
 
 def Taskr.prestart

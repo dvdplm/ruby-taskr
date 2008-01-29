@@ -130,6 +130,7 @@ module Taskr::Controllers
         
         unless @task.valid?
           @status = 500
+          @actions = Taskr::Actions.list
           return render(:new_task)
         end
       
