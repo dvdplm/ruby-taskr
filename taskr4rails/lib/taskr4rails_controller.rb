@@ -37,6 +37,7 @@ class Taskr4railsController < ActionController::Base
     
     io = StringIO.new
     prev_stdout, prev_stderr = $stdout, $stderr
+    output = ""
     $stdout = io
     $stderr = io
     begin
