@@ -27,10 +27,6 @@ module Taskr
   include Camping::Session
 end
 
-if Taskr::Conf[:authentication]
-  Taskr.authenticate_using(Taskr::Conf[:authentication][:method] || :basic)
-end
-
 module Taskr
   @@scheduler = nil
   def self.scheduler=(scheduler)
@@ -49,10 +45,18 @@ require 'taskr/controllers'
 
 module Taskr
   include Taskr::Models
-  include Camping::Session
+  
+  def self.authenticate(credentials)
+    credentials[:username] == Taskr::Conf[:authentication][:username] &&
+      credentials[:password] == Taskr::Conf[:authentication][:password]
+  end
 end
 
 include Taskr::Models
+
+if Taskr::Conf[:authentication]
+  Taskr.authenticate_using(Taskr::Conf[:authentication][:method] || :basic)
+end
 
 def Taskr.create
   $LOG.info "Initializing Taskr..."
@@ -70,7 +74,6 @@ def Taskr.create
       require f
     end
   end
-  Camping::Models::Session.create_schema
 end
 
 def Taskr.prestart
