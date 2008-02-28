@@ -21,12 +21,6 @@ Taskr.picnic!
 
 require 'taskr/controllers'
 
-
-require 'camping/session'
-module Taskr
-  include Camping::Session
-end
-
 module Taskr
   @@scheduler = nil
   def self.scheduler=(scheduler)
@@ -57,6 +51,11 @@ include Taskr::Models
 if Taskr::Conf[:authentication]
   Taskr.authenticate_using(Taskr::Conf[:authentication][:method] || :basic)
 end
+
+$CONF[:public_dir] = {
+  :path => "public",
+  :dir  => File.join(File.expand_path(File.dirname(__FILE__)),"public")
+}
 
 def Taskr.create
   $LOG.info "Initializing Taskr..."
