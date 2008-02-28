@@ -39,7 +39,7 @@ unless Object.method_defined? :gem
   alias gem require_gem
 end
 
-require 'picnic.rb'
+require 'picnic'
 require 'camping/db'
 
 require 'reststop'
