@@ -72,14 +72,27 @@ database:
 
 ##### AUTHENTICATION ##################################################################
 
-# Taskr supports basic HTTP authentication. Uncomment this if you want Taskr to demand
-# a username and password from clients. Note that this isn't very secure unless
+# Taskr supports two methods for authentication: Basic HTTP and CAS. 
+
+### Basic HTTP Example
+# Uset the following if you want Taskr to demand a username and password from the user
+# using basic HTTP authentication clients. Note that this isn't very secure unless
 # you run Taskr over HTTPS (see the webrick SSL example above).
 
 #authentication:
+#  method: basic
 #  username: taskr
 #  password: task!
 
+### CAS Example
+# Uset the following if you want Taskr to demand a username and password using
+# Single Sign-On CAS (Central Authentication System). For more information on CAS see
+# http://code.google.com/p/rubycas-server/.
+# The cas_base_url setting should be the URL of your CAS server.
+
+#authenticatoin:
+#  method: cas
+#  cas_base_url: https://login.example.foo/cas
 
 ##### LOGGING #########################################################################
 
