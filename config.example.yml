@@ -85,7 +85,7 @@ database:
 #  password: task!
 
 ### CAS Example
-# Uset the following if you want Taskr to demand a username and password using
+# Use the following if you want Taskr to demand a username and password using
 # Single Sign-On CAS (Central Authentication System). For more information on CAS see
 # http://code.google.com/p/rubycas-server/.
 # The cas_base_url setting should be the URL of your CAS server.
