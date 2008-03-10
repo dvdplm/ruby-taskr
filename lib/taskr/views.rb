@@ -156,6 +156,9 @@ module Taskr::Views
         form(:method => 'delete', :style => 'display: inline') do
           button(:type => 'submit', :value => 'delete') {"Delete"}
         end
+        form(:method => 'put', :style => 'display: inline', :action => R(@task, 'run')) do
+          button(:type => 'submit', :value => 'run') {"Run Now!"}
+        end
         br
         a(:href => R(Tasks, :list)) {"Back to Task List"}
         

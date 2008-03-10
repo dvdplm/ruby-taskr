@@ -62,26 +62,8 @@ module Taskr::Models
       
       $LOG.debug "Scheduling task #{name.inspect}: #{self.inspect}"
       
-      if task_actions.length == 1
-        ta = task_actions.first
-        
-        parameters = {}
-        ta.action_parameters.each{|p| parameters[p.name] = p.value}
-        
-        action = (ta.action_class.kind_of?(Class) ? ta.action_class : ta.action_class.constantize).new(parameters)
-        action.task = self
-      elsif task_actions.length > 1
-        action = Taskr::Actions::Multi.new
-        task_actions.each do |ta|
-          parameters = {}
-          ta.action_parameters.each{|p| parameters[p.name] = p.value}
-          
-          a = (ta.action_class.kind_of?(Class) ? ta.action_class : ta.action_class.constantize).new(parameters)
-          a.task = self
-          
-          action.actions << a 
-        end
-        action.task = self
+      if task_actions.length > 0
+        action = prepare_action
       else
         $LOG.warn "Task #{name.inspect} has no actions and as a result will not be scheduled!"
         return false
@@ -107,6 +89,34 @@ module Taskr::Models
       return job_id
     end
     
+    def prepare_action
+      if task_actions.length == 1
+        ta = task_actions.first
+        
+        parameters = {}
+        ta.action_parameters.each{|p| parameters[p.name] = p.value}
+        
+        action = (ta.action_class.kind_of?(Class) ? ta.action_class : ta.action_class.constantize).new(parameters)
+        action.task = self
+      elsif task_actions.length > 1
+        action = Taskr::Actions::Multi.new
+        task_actions.each do |ta|
+          parameters = {}
+          ta.action_parameters.each{|p| parameters[p.name] = p.value}
+          
+          a = (ta.action_class.kind_of?(Class) ? ta.action_class : ta.action_class.constantize).new(parameters)
+          a.task = self
+          
+          action.actions << a 
+        end
+        action.task = self
+      else
+        raise "Task #{name.inspect} has no actions!"
+      end
+      
+      action
+    end
+    
     def next_trigger_time
       # TODO: need to figure out how to calulate trigger_time for these.. for now return :unknown
       return :unknown unless schedule_method == 'at' || schedule_method == 'in'
@@ -122,10 +132,12 @@ module Taskr::Models
       # treat 0000-00-00 00:00:00 as nil
       Time.send(Base.default_timezone, *time_array) rescue DateTime.new(*time_array[0..5]) rescue nil
     end
+
     
     def to_s
       "#<#{self.class}:#{self.id}>"
     end
+    
   end
   
   class TaskAction < Base

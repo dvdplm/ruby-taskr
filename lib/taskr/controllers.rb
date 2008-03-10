@@ -45,24 +45,28 @@ module Taskr::Controllers
   class Tasks < REST 'tasks'
     include Taskr::Models
     
+    # List of tasks.
     def list
       @tasks = Task.find(:all, :include => [:task_actions])
       
       render :tasks_list
     end
     
+    # Input for a new task.
     def new
       @actions = Taskr::Actions.list
       
       render :new_task
     end
     
+    # Retrieve details for an existing task.
     def read(id)
       @task = Task.find(id, :include => [:task_actions])
       
       render :view_task
     end
     
+    # Create and schedule a new task.
     def create
       begin
         # the "0" is for compatibility with PHP's Zend_Rest_Client
@@ -150,7 +154,18 @@ module Taskr::Controllers
         raise e
       end
     end
+
+    def run(id)
+      @task = Task.find(id, :include => [:task_actions])
+      
+      action = @task.prepare_action
+      
+      action.trigger
+      
+      render :view_task
+    end
     
+    # Unschedule and delete an existing task.
     def destroy(id)
       @task = Task.find(id)
       if @task.scheduler_job_id
