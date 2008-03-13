@@ -1,6 +1,6 @@
 === 0.3.0 :: In progress...
 
-* Added "run" action allowing a task to be immediately triggered.
+* Added "Run Now" function allowing a task to be immediately triggered.
 
 === 0.2.1 :: 2008-02-28
 

@@ -55,7 +55,7 @@ hoe = Hoe.new(GEM_NAME, VERS) do |p|
   
   p.extra_deps = [
     ['picnic', '~>0.6.1'], 
-    ['reststop', '~>0.2.0'], 
+    ['reststop', '~>0.2.0.50'], 
     'openwferu-scheduler'
   ]
   p.spec_extras = {:executables => ['taskr', 'taskr-ctl']}
