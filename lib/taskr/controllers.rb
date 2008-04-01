@@ -173,7 +173,17 @@ module Taskr::Controllers
         Taskr.scheduler.unschedule(@task.scheduler_job_id)
       end
       @task.destroy
-      return redirect(R(Tasks, :list))
+      
+      if @task.frozen?
+        @status = 200
+        if @format == :XML
+          ""
+        else
+          return redirect(R(Tasks, :list))
+        end
+      else
+        _error("Task #{id} was not destroyed.", 500)
+      end
     end
   end
 end

@@ -30,13 +30,6 @@ module Taskr::Views
     def view_task
       @task.to_xml(:root => 'task')#, :include => [:task_actions])
     end
-    
-    def create_task_result
-      taskr_response_xml(@task.valid? ? 'success' : 'failure') do
-        text @task.to_xml
-        text @task.errors.to_xml unless @task.valid?
-      end
-    end
   end
   
   module HTML
