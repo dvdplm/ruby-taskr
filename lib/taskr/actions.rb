@@ -207,6 +207,15 @@ module Taskr
           auth['password'] = parameters['password'] if parameters['password']
         end
         
+        if parameters['params'].kind_of? String
+          params2 = {}
+          parameters['params'].split('&').collect do |p|
+            key, value = p.split('=')
+            params2[key] = value
+          end
+          parameters['params'] = params2
+        end
+        
         Restr.logger = $LOG
         Restr.do(parameters['method'], parameters['url'], parameters['params'], auth)
       end

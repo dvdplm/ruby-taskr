@@ -1,6 +1,10 @@
 === 0.3.0 :: In progress...
 
 * Added "Run Now" function allowing a task to be immediately triggered.
+* The Rest action can now take the 'params' parameter as a CGI string
+  (e.g. foo=bar&blah=hello&taskr=awesome). The string does not have
+  to be properly URI-encoded, since the algorithm for parsing it simply
+  splits it based on & and = symbols. 
 
 === 0.2.1 :: 2008-02-28
 
