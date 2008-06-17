@@ -211,6 +211,8 @@ module Taskr::Views
             td @task.created_on
           end
         end
+        
+        iframe(:src => R(LogEntries, :list, :task_id => @task.id), :style => 'width: 100%; margin-top: 20px;')
       end
     end
     
@@ -272,6 +274,33 @@ module Taskr::Views
       
     end
    
+    def log_entries_list
+      h2 "Log"
+      table do
+        @log_entries.each do |entry|
+          case entry.level.downcase.intern
+          when :error
+            bg_color = '#faa'
+          when :warn
+            bg_color = '#ffa'
+          when :info
+            bg_color = '#aaf'
+          when :debug
+            bg_color = '#eee'
+          else
+            bg_color = '#fff; '+entry.level.inspect
+          end
+          tr do
+            td(:style => "vertical-align: top; font-size: 9pt; white-space: nowrap; background: #{bg_color}") do
+              entry.timestamp
+            end
+            td(:style => "vertical-align: top; font-size: 9pt; background-color: #{bg_color}; font-size: 9pt; font-family: monospace") do
+              entry.data.gsub(/<\/?(html|body)>/, '')
+            end
+          end
+        end
+      end
+    end
   end
   
   default_format :HTML

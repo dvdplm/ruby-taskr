@@ -9,6 +9,8 @@
 * Task executions are now logged to the new log_entries table. These
   log entries are viewable under the task detail page.
   TODO: Log rotation, log-level thresholding, etc.
+* Exceptions raised when a task is run manually are now handled gracefully
+  (or rather, silently, since they should be logged by the action).
 
 === 0.2.1 :: 2008-02-28
 

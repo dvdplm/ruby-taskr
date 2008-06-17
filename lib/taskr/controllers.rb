@@ -160,7 +160,11 @@ module Taskr::Controllers
       
       action = @task.prepare_action
       
-      action.trigger
+      begin
+        action.trigger
+      rescue
+        # ok to catch exception silently. it should have gotten logged by the action
+      end
       
       render :view_task
     end
@@ -184,6 +188,16 @@ module Taskr::Controllers
       else
         _error("Task #{id} was not destroyed.", 500)
       end
+    end
+  end
+  
+  class LogEntries < REST 'log_entries'
+    def list
+      @log_entries = LogEntry.find(:all, 
+        :conditions => ['task_id = ?', @input[:task_id]],
+        :order => 'timestamp DESC, id DESC')
+      
+      render :log_entries_list
     end
   end
 end

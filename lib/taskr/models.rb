@@ -248,8 +248,6 @@ module Taskr::Models
     # Exposes a Logger-like interface for logging entries for some particular
     # TaskAction.
     class ActionLogger
-      attr_accessor :progname
-      
       def initialize(action)
         @action = action
       end
@@ -259,7 +257,14 @@ module Taskr::Models
       end
       
       def respond_to?(method)
-        [:debug, :info, :warn, :error].include?(method.intern)
+        [:debug, :info, :warn, :error].include?(method)
+      end
+      
+      def progname
+        action.task.name
+      end
+      
+      def progname=(p)
       end
     end
   end

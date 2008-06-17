@@ -233,7 +233,7 @@ module Taskr
         end
         
         Restr.logger = LogEntry.logger_for_action(task_action)
-        Restr.do(parameters['method'], parameters['url'], parameters['params'], auth)
+        Restr.do(parameters['method'], parameters['url'], (parameters['params'] unless parameters['params'].blank?), auth)
       end
     end
     
