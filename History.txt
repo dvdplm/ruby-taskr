@@ -4,7 +4,11 @@
 * The Rest action can now take the 'params' parameter as a CGI string
   (e.g. foo=bar&blah=hello&taskr=awesome). The string does not have
   to be properly URI-encoded, since the algorithm for parsing it simply
-  splits it based on & and = symbols. 
+  splits it based on & and = symbols.
+* Changed from the old OpenWFE to the new Rufus.
+* Task executions are now logged to the new log_entries table. These
+  log entries are viewable under the task detail page.
+  TODO: Log rotation, log-level thresholding, etc.
 
 === 0.2.1 :: 2008-02-28
 

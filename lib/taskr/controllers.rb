@@ -112,9 +112,9 @@ module Taskr::Controllers
           
           begin
             action_class = action_class_name.constantize
-            unless action_class.include? OpenWFE::Schedulable
+            unless action_class.include? Rufus::Schedulable
               raise ArgumentError, 
-                "#{a[:action_class_name].inspect} cannot be used as an action because it does not include the OpenWFE::Schedulable module."
+                "#{a[:action_class_name].inspect} cannot be used as an action because it does not include the Rufus::Schedulable module."
             end
           rescue NameError
             raise ArgumentError, 

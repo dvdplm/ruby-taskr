@@ -44,5 +44,5 @@ require 'camping/db'
 
 require 'reststop'
 
-gem 'openwferu-scheduler', '~> 0.9.16'
-require 'openwfe/util/scheduler'
+gem 'rufus-scheduler', '~> 1.0.7'
+require 'rufus/scheduler'

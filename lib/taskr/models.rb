@@ -17,7 +17,7 @@ require 'camping/db'
 require 'openwfe/util/scheduler'
 require 'date'
 
-class OpenWFE::Scheduler
+class Rufus::Scheduler
   public :duration_to_f
 end
 
@@ -98,6 +98,7 @@ module Taskr::Models
         
         action = (ta.action_class.kind_of?(Class) ? ta.action_class : ta.action_class.constantize).new(parameters)
         action.task = self
+        action.task_action = ta
       elsif task_actions.length > 1
         action = Taskr::Actions::Multi.new
         task_actions.each do |ta|
@@ -106,6 +107,7 @@ module Taskr::Models
           
           a = (ta.action_class.kind_of?(Class) ? ta.action_class : ta.action_class.constantize).new(parameters)
           a.task = self
+          a.tasK_action = ta
           
           action.actions << a 
         end
@@ -147,6 +149,12 @@ module Taskr::Models
       :class_name => 'TaskActionParameter', 
       :foreign_key => :task_action_id,
       :dependent => :destroy
+    
+    has_many :log_entries
+    has_one :last_log_entry,
+      :class_name => 'LogEntry',
+      :foreign_key => :task_id,
+      :order => 'timestamp DESC'
     
     validates_associated :action_parameters
     
@@ -203,6 +211,58 @@ module Taskr::Models
       "#<#{self.class}:#{self.id}>"
     end
   end
+  
+  class LogEntry < Base
+    belongs_to :task
+    belongs_to :task_action
+    
+    class << self
+      def log(level, action, data)
+        level = level.upcase
+        action = TaskAction.find(action) unless action.kind_of?(TaskAction)
+        task = action.task
+        
+        LogEntry.create(
+          :level => level,
+          :timestamp => Time.now,
+          :task => task,
+          :task_action => action,
+          :data => data
+        )
+      end
+      
+      # Produces a Logger-like class that will create log entries for the given
+      # TaskAction. The returned object exploses behaviour much like a standard
+      # Ruby Logger, so that it can be used in place of a Logger when necessary. 
+      def logger_for_action(action)
+        ActionLogger.new(action)
+      end
+    
+      ['debug', 'info', 'warn', 'error'].each do |level|
+        define_method(level) do |action, data|
+          log(level, action, data)
+        end
+      end
+    end
+    
+    # Exposes a Logger-like interface for logging entries for some particular
+    # TaskAction.
+    class ActionLogger
+      attr_accessor :progname
+      
+      def initialize(action)
+        @action = action
+      end
+      
+      def method_missing(method, data)
+        LogEntry.send(method, @action, "#{"#{@progname}: " unless @progname.blank?}#{data}")
+      end
+      
+      def respond_to?(method)
+        [:debug, :info, :warn, :error].include?(method.intern)
+      end
+    end
+  end
 
   class CreateTaskr < V 0.01
     def self.up
@@ -245,6 +305,28 @@ module Taskr::Models
     def self.down
       drop_table :taskr_task_action_parameters
       drop_table :taskr_tasks
+    end
+  end
+  
+  class AddLoggingTables < V 0.3
+    def self.up
+      $LOG.info("Creating logging tables")
+      
+      create_table :taskr_log_entries, :force => true do |t|
+        t.column :task_id, :integer
+        t.column :task_action_id, :integer
+        
+        t.column :timestamp, :timestamp, :null => false
+        t.column :level, :string, :null => false
+        t.column :data, :text
+      end
+      
+      add_index :taskr_log_entries, :task_id
+      add_index :taskr_log_entries, :task_action_id
+    end
+    
+    def self.down
+      drop_table :taskr_log_entries
     end
   end
 end

@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Taskr.  If not, see <http://www.gnu.org/licenses/>.
 
-require 'openwfe/util/scheduler'
+require 'rufus/scheduler'
 
 #require 'active_resource'
 require 'restr'
@@ -39,13 +39,14 @@ module Taskr
     # The base class for all Actions.
     # Extend this to define your own custom Action.
     class Base
-      include OpenWFE::Schedulable
+      include Rufus::Schedulable
       
       class_inheritable_accessor :parameters
       class_inheritable_accessor :description
       
       attr_accessor :parameters
       attr_accessor :task
+      attr_accessor :task_action
       
       def initialize(parameters)
         self.parameters = HashWithIndifferentAccess.new(parameters)
@@ -79,7 +80,7 @@ module Taskr
     #
     # If you want to define your own custom Action, extend Taskr::Actions::Base
     class Multi
-      include OpenWFE::Schedulable
+      include Rufus::Schedulable
       
       attr_accessor :actions
       attr_accessor :task
@@ -135,11 +136,26 @@ module Taskr
       self.description = "Execute some Ruby code."
       
       def execute
+        outio = StringIO.new
+        errio = StringIO.new
+        old_stdout, $stdout = $stdout, outio
+        old_stderr, $stderr = $stderr, errio
+        
         code = parameters['code']
-        eval code
+        eval(code)
+        
+        err = errio.string
+        out = outio.string
+        LogEntry.debug(task_action, out) unless out.blank?
+        LogEntry.error(task_action, err) unless err.blank?
+        
+        $stdout = old_stdout
+        $stderr = old_stderr
       end
     end
-    
+
+
+# This is too complicated... we use Restr instead.
 #    class ActiveResource < Base
 #      self.parameters = ['site', 'resource', 'action', 'parameters']
 #      self.description = "Perform a REST call on a remote service using ActiveResource."
@@ -216,7 +232,7 @@ module Taskr
           parameters['params'] = params2
         end
         
-        Restr.logger = $LOG
+        Restr.logger = LogEntry.logger_for_action(task_action)
         Restr.do(parameters['method'], parameters['url'], parameters['params'], auth)
       end
     end
@@ -255,7 +271,7 @@ module Taskr
         }
         
         
-        Restr.logger = $LOG
+        Restr.logger = LogEntry.logger_for_action(task_action)
         Restr.post(parameters['url'], data)
       end
     end

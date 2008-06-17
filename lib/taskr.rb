@@ -76,9 +76,9 @@ def Taskr.create
 end
 
 def Taskr.prestart
-  $LOG.info "Starting OpenWFE Scheduler..."
+  $LOG.info "Starting Rufus Scheduler..."
   
-  Taskr.scheduler = OpenWFE::Scheduler.new
+  Taskr.scheduler = Rufus::Scheduler.new
   Taskr.scheduler.start
   
   $LOG.debug "Scheduler is: #{Taskr.scheduler.inspect}"
