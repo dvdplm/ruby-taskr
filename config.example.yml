@@ -4,10 +4,10 @@
 # !!! Be sure to use spaces instead of tabs for indentation, as YAML is very
 # !!! sensitive to white-space inconsistencies!
 
-##### HTTP SERVER #####################################################################
+##### HTTP SERVER ##############################################################
 
-# Under what HTTP environment are you running the Fluxr server? The following methods
-# are currently supported:
+# Under what HTTP environment are you running the Fluxr server? The following 
+# methods are currently supported:
 #
 # webrick -- simple stand-alone HTTP server; this is the default method
 # mongrel -- fast stand-alone HTTP server; much faster than webrick, but 
@@ -34,16 +34,16 @@ port: 7007
 #server: mongrel
 #port: 7007
 
-# It is possible to run mongrel over SSL, but you will need to use a reverse proxy
-# (try Pound or Apache).
+# It is possible to run mongrel over SSL, but you will need to use a reverse 
+# proxy (try Pound or Apache).
 
 
-##### DATABASE ########################################################################
+##### DATABASE #################################################################
 
 # Taskr needs a database to persist its state between restarts.
 # 
-# By default, we use MySQL, since it is widely used and does not require any additional
-# ruby libraries besides ActiveRecord.
+# By default, we use MySQL, since it is widely used and does not require any 
+# additional ruby libraries besides ActiveRecord.
 #
 # With MySQL, your config would be something like the following:
 # (be sure to create the taskr database in MySQL beforehand,
@@ -57,8 +57,8 @@ database:
   host: localhost
 
 
-# Instead of MySQL you can use SQLite3, PostgreSQL, MSSQL, or anything else supported 
-# by ActiveRecord.
+# Instead of MySQL you can use SQLite3, PostgreSQL, MSSQL, or anything else 
+# supported by ActiveRecord.
 #
 # If you do not have a database server available, you can try using the SQLite3
 # back-end. SQLite3 does not require it's own server. Instead all data is stored
@@ -70,14 +70,14 @@ database:
 #  dbfile: /var/lib/taskr.db
 
 
-##### AUTHENTICATION ##################################################################
+##### AUTHENTICATION ###########################################################
 
 # Taskr supports two methods for authentication: Basic HTTP and CAS. 
 
 ### Basic HTTP Example
-# Uset the following if you want Taskr to demand a username and password from the user
-# using basic HTTP authentication clients. Note that this isn't very secure unless
-# you run Taskr over HTTPS (see the webrick SSL example above).
+# Uset the following if you want Taskr to demand a username and password from 
+# the user using basic HTTP authentication clients. Note that this isn't very 
+# secure unless you run Taskr over HTTPS (see the webrick SSL example above).
 
 #authentication:
 #  method: basic
@@ -86,8 +86,8 @@ database:
 
 ### CAS Example
 # Use the following if you want Taskr to demand a username and password using
-# Single Sign-On CAS (Central Authentication System). For more information on CAS see
-# http://code.google.com/p/rubycas-server/.
+# Single Sign-On CAS (Central Authentication System). For more information on 
+# CAS see http://code.google.com/p/rubycas-server/.
 # The cas_base_url setting should be the URL of your CAS server.
 
 #authenticatoin:
@@ -95,7 +95,7 @@ database:
 #  cas_base_url: https://login.example.foo/cas
 
 
-##### LOGGING #########################################################################
+##### LOGGING ##################################################################
 
 ### System Log
 # This is the general server log where Taskr writes information about web requests.
@@ -138,3 +138,39 @@ log:
 task_log:
   # ERROR, WARN, INFO, or DEBUG
   level: DEBUG
+  
+  
+##### MISC #####################################################################
+
+### Custom Task Definitions
+# You can define your own task action behaviour by specifying an external ruby
+# filename. On startup, Taskr will load any action definitions from this file,
+# making them available when scheduling new tasks (you should see your custom
+# task classes listed in the Actions pulldown on the new task page).
+#
+# Custom task definitions must:
+# - be defined under the Taskr::Actions module
+# - extend the Taskr::Actions::Base class
+# - implement a 'execute' method (this is what will be executed when your
+#   action is triggered)
+# - define a 'parameters' class attribute which should be an Array listing
+#   the names of the parameters that your action takes
+# - define a 'description' class attribute which should provide a brief
+#   description for what your action does (this will show up in the web UI) 
+#
+# Here is an example of a trivial custom action:
+#
+#  module Taskr
+#    module Actions
+#      class MyCustomAction < Taskr::Actions::Base
+#        self.parameters = ['alpha', 'beta']
+#        self.description = "Multiplies the given parameters and prints the result to stdout."
+#
+#        def execute
+#          puts parameters['alpha'].to_i * parameters['beta'].to_i
+#        end
+#      end
+#    end
+#  end
+
+#external_actions: /path/to/file.rb
