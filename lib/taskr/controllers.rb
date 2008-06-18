@@ -68,6 +68,7 @@ module Taskr::Controllers
     
     # Create and schedule a new task.
     def create
+      puts @input.inspect
       begin
         # the "0" is for compatibility with PHP's Zend_Rest_Client
         task_data = @input[:task] || @input["0"] || @input
@@ -76,12 +77,14 @@ module Taskr::Controllers
         created_by      = @env['REMOTE_HOST']
         schedule_method = task_data[:schedule_method]
         schedule_when   = task_data[:schedule_when]
+        memo            = task_data[:memo]
         
         @task = Task.new(
           :name => name,
           :created_by => created_by,
           :schedule_method => schedule_method,
-          :schedule_when => schedule_when
+          :schedule_when => schedule_when,
+          :memo => memo
         )
         
         # some gymnastics here to provide compatibility for the way various
@@ -102,11 +105,11 @@ module Taskr::Controllers
         end
         
         actions = [actions] unless actions.kind_of? Array
-        puts actions.inspect
+        #puts actions.inspect
         
         i = 0
         actions.each do |a|
-          puts a.inspect
+          #puts a.inspect
           action_class_name = a[:action_class_name]
           action_class_name = "Taskr::Actions::#{action_class_name}" unless action_class_name =~ /^Taskr::Actions::/
           
@@ -123,8 +126,11 @@ module Taskr::Controllers
           
           action = TaskAction.new(:order => a[:order] || i, :action_class_name => action_class_name)
           
+          
           action_class.parameters.each do |p|
-            action.action_parameters << TaskActionParameter.new(:name => p, :value => a[p])
+            value = a[p]
+            value = nil if value.blank?
+            action.action_parameters << TaskActionParameter.new(:name => p, :value => value)
           end
           
           @task.task_actions << action
@@ -159,6 +165,8 @@ module Taskr::Controllers
       @task = Task.find(id, :include => [:task_actions])
       
       action = @task.prepare_action
+      
+      LogEntry.info(@task, "Manually executing task #{@task}.")
       
       begin
         action.trigger

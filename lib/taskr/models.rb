@@ -107,7 +107,7 @@ module Taskr::Models
           
           a = (ta.action_class.kind_of?(Class) ? ta.action_class : ta.action_class.constantize).new(parameters)
           a.task = self
-          a.tasK_action = ta
+          a.task_action = ta
           
           action.actions << a 
         end
@@ -137,7 +137,7 @@ module Taskr::Models
 
     
     def to_s
-      "#<#{self.class}:#{self.id}>"
+      "#{name.inspect}@#{schedule_when}"
     end
     
   end
@@ -186,7 +186,7 @@ module Taskr::Models
     end
     
     def to_s
-      "#<#{self.class}:#{self.id}>"
+      "#{self.class.name.demodulize}(#{task_action})"
     end
   end
 
@@ -208,7 +208,7 @@ module Taskr::Models
     end
     
     def to_s
-      "#<#{self.class}:#{self.id}>"
+      "#{self.class.name.demodulize}(#{name}:#{value})"
     end
   end
   
@@ -217,10 +217,23 @@ module Taskr::Models
     belongs_to :task_action
     
     class << self
-      def log(level, action, data)
+      def log(level, action_or_task, data)
         level = level.upcase
-        action = TaskAction.find(action) unless action.kind_of?(TaskAction)
-        task = action.task
+        if action_or_task.kind_of? TaskAction
+          action = action_or_task
+          task = action.task
+        elsif action_or_task.kind_of? Task
+          action = nil
+          task = action_or_task
+        elsif action_or_task.kind_of? Integer
+          action = TaskAction.find(action_or_task)
+          task = action.task
+        elsif action_or_task.kind_of? Taskr::Actions::Base
+          action = action_or_task.task_action
+          task = action.task
+        else
+          raise ArgumentError, "#{action_or_task.inspect} is not a valid Task or TaskAction!"
+        end
         
         LogEntry.create(
           :level => level,
@@ -332,6 +345,16 @@ module Taskr::Models
     
     def self.down
       drop_table :taskr_log_entries
+    end
+  end
+  
+  class AddMemoToTasks < V 0.3001
+    def self.up
+      add_column :taskr_tasks, :memo, :text
+    end
+    
+    def self.down
+      remove_column :taskr_tasks, :memo
     end
   end
 end

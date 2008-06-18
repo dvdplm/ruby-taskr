@@ -73,6 +73,10 @@ module Taskr
           raise e
         end
       end
+      
+      def to_s
+        "#{self.class.name}(#{parameters.inspect})"
+      end
     end
     
     # Do not extend this class. It is used internally to schedule multiple
@@ -91,19 +95,36 @@ module Taskr
       
       def trigger(trigger_args = {})
         begin
-          $LOG.info("Executing task #{self.name}")
+          $LOG.info("Executing task #{self.task.name}")
           actions.each do |a|
             a.execute
+            LogEntry.info(a, "Action #{a} executed.")
           end
           # TODO: maybe we should store last_triggered time on a per-action basis?
           task.update_attribute(:last_triggered, Time.now)
+          task.update_attribute(:last_triggered_error, nil)
         rescue => e
           $LOG.error(e)
-          $LOG.debug("#{e.stacktrace}")
+          $LOG.debug("#{e.backtrace}")
           task.update_attribute(:last_triggered, Time.now)
-          task.update_attribute(:last_triggered_error, e)
+          task.update_attribute(:last_triggered_error, {:type => e.class.to_s, :details => "#{e.message}"})
+          # FIXME: Maybe actions should be responseible for logging their errors, otherwise we double-log the same error.
+          LogEntry.error(task, "Task #{task} raised an exception: \n#{e.class}: #{e.message}\n#{e.backtrace}")
           raise e
         end
+      end
+    end
+    
+    class RotateTaskLog < Base
+      self.parameters = ['delete_old_log_entries_after_days']
+      self.description = "Deletes old task log entries from this Taskr server's database."
+      
+      def execute
+        num = parameters['delete_old_log_entries_after_days'].to_i
+        
+        cond = ['timestamp < ?', Time.now - num.days]
+        LogEntry.delete_all(cond)
+        LogEntry.debug(task_action, "Deleted log entries with conditions: #{cond.inspect}")
       end
     end
     
@@ -119,14 +140,29 @@ module Taskr
           user = nil
         end
         
-        if user
-          `sudo -u #{user} #{cmd}`
-        else
-          `#{cmd}`
+        unless user.blank?
+          cmd = "sudo -u #{user} #{cmd}"
         end
         
+        outio = StringIO.new
+        errio = StringIO.new
+        old_stdout, $stdout = $stdout, outio
+        old_stderr, $stderr = $stderr, errio
+        
+        out = `#{cmd}`
+        
+        err = errio.string
+        out = outio.string
+        LogEntry.debug(task_action, out) unless out.blank?
+        LogEntry.error(task_action, err) unless err.blank?
+        
+        $stdout = old_stdout
+        $stderr = old_stderr
+        
         unless $?.success?
-          raise "Shell command failed (#{$?}): #{cmd}"
+          msg = "Shell command #{cmd.inspect} failed (returned code #{$?}): #{out}"
+          LogEntry.error(task_action, msg)
+          raise msg
         end
       end
     end

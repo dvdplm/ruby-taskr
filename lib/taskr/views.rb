@@ -121,6 +121,12 @@ module Taskr::Views
             input :type => 'text', :name => 'schedule_when', :size => 30
           end
           
+          p do
+            label 'description/memo' 
+            br
+            textarea(:name => 'memo', :cols => '60', :rows => '4'){""}
+          end
+          
           action_form
           
           p do
@@ -147,7 +153,7 @@ module Taskr::Views
     def view_task
       html_scaffold do
         form(:method => 'delete', :style => 'display: inline') do
-          button(:type => 'submit', :value => 'delete') {"Delete"}
+          button(:type => 'submit', :value => 'delete', :onclick => 'return confirm("Are you sure you want to unschedule and delete this task?")') {"Delete"}
         end
         form(:method => 'put', :style => 'display: inline', :action => R(@task, 'run')) do
           button(:type => 'submit', :value => 'run') {"Run Now!"}
@@ -164,6 +170,10 @@ module Taskr::Views
           tr do
             th "Schedule:"
             td "#{@task.schedule_method} #{@task.schedule_when}"
+          end
+          tr do
+            th "Description/Memo:"
+            td "#{@task.memo}"
           end
           tr do
             th "Job ID:"
@@ -295,7 +305,7 @@ module Taskr::Views
               entry.timestamp
             end
             td(:style => "vertical-align: top; font-size: 9pt; background-color: #{bg_color}; font-size: 9pt; font-family: monospace") do
-              entry.data.gsub(/<\/?(html|body)>/, '')
+              entry.data.gsub(/<\/?(html|body)>/, '').gsub(/\n/, "<br />")
             end
           end
         end

@@ -94,9 +94,15 @@ database:
 #  method: cas
 #  cas_base_url: https://login.example.foo/cas
 
+
 ##### LOGGING #########################################################################
 
-# This log is where you'll want to look in case of problems. 
+### System Log
+# This is the general server log where Taskr writes information about web requests.
+# You'll want to look here if you encounter general problems with Taskr's
+# operation. Do not confuse this log with the task log, which records information
+# about the various schedules jobs. The task log is kept in your database and
+# is completely separate (see below). 
 # 
 # By default, we will try to create a log file named 'taskr.log' in the current 
 # directory (the directory where you're running taskr from). A better place to put 
@@ -111,3 +117,24 @@ log:
   level: DEBUG
 #  file: /var/log/taskr.log
 #  level: INFO
+
+### Task Log
+# This is where Taskr records detailed information about your scheduled jobs (tasks).
+# Every time a task is triggered, information about the execution is recorded
+# in this log (i.e. whether the task executed successfuly, its output, etc.)
+# The Task Log is stored in the Taskr database under the log_entries table.
+#
+# Here you can configure the logging level. The "INFO" level is generally a good 
+# choice for production systems, although you may want to keep this at "DEBUG" 
+# if you want to keep a close eye on your tasks -- this is a good idea 
+# especially when setting up a new Taskr system.
+#
+# Note that in order to prevent log data from accumulating indefinitely, you
+# should set up a "RotateTaskLog" action in your Taskr server. This will
+# delete old logs as per the parameters you provide (do this via the
+# normal Taskr web interface as you would to set up any other task -- just
+# select "RotateTaskLog" for the action).
+
+task_log:
+  # ERROR, WARN, INFO, or DEBUG
+  level: DEBUG
