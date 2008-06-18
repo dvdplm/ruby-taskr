@@ -235,13 +235,18 @@ module Taskr::Models
           raise ArgumentError, "#{action_or_task.inspect} is not a valid Task or TaskAction!"
         end
         
-        LogEntry.create(
-          :level => level,
-          :timestamp => Time.now,
-          :task => task,
-          :task_action => action,
-          :data => data
-        )
+        threshold = Taskr::Conf[:task_log][:level].upcase if Taskr::Conf[:task_log] && Taskr::Conf[:task_log][:level]
+        
+        if threshold.blank? || 
+            ['DEBUG', 'INFO', 'WARN', 'ERROR'].index(threshold) <= ['DEBUG', 'INFO', 'WARN', 'ERROR'].index(level) 
+          LogEntry.create(
+            :level => level,
+            :timestamp => Time.now,
+            :task => task,
+            :task_action => action,
+            :data => data
+          )
+        end
       end
       
       # Produces a Logger-like class that will create log entries for the given
