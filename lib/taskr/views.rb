@@ -152,7 +152,7 @@ module Taskr::Views
     
     def view_task
       html_scaffold do
-        form(:method => 'delete', :style => 'display: inline') do
+        form(:method => 'delete', :style => 'display: inline', :action => R(@task)) do
           button(:type => 'submit', :value => 'delete', :onclick => 'return confirm("Are you sure you want to unschedule and delete this task?")') {"Delete"}
         end
         form(:method => 'put', :style => 'display: inline', :action => R(@task, 'run')) do
