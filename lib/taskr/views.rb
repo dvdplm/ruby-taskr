@@ -304,7 +304,11 @@ module Taskr::Views
     end
    
     def log_entries_list
-      h2 "Log"
+      h2 do
+        "Log" +
+         (@since.blank? ? "" : em(:style => "font-weight: normal; font-size: 9pt"){"Showing entries since #{@since}"})
+      end
+            
       table do
         @log_entries.each do |entry|
           case entry.level.downcase.intern
