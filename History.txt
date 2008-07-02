@@ -1,3 +1,8 @@
+=== In Progress...
+
+* Log entries in task view can now be filtered by date. By default only entries
+  from the last 24 hours are shown. 
+
 === 0.3.0 :: 2008-06-19
 
 * Added "Run Now" function allowing a task to be immediately triggered.
