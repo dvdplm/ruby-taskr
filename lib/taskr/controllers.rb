@@ -202,7 +202,8 @@ module Taskr::Controllers
   class LogEntries < REST 'log_entries'
     def list
       @log_entries = LogEntry.find(:all, 
-        :conditions => ['task_id = ?', @input[:task_id]],
+        :conditions => ['task_id = ? AND IF(?,timestamp > ?,1)', 
+                        @input[:task_id], !@input[:since].blank?, @input[:since]],
         :order => 'timestamp DESC, id DESC')
       
       render :log_entries_list

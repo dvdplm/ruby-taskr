@@ -222,7 +222,26 @@ module Taskr::Views
           end
         end
         
-        iframe(:src => R(LogEntries, :list, :task_id => @task.id), :style => 'width: 100%; margin-top: 20px;')
+        script %{
+          function clickbold(el) {
+            $$('#logfilter a').each(function(a){a.style.fontWeight = 'normal'})
+            el.style.fontWeight = 'bold'
+          } 
+        }
+        
+        p(:style => "margin-top: 20px; border-top: 1px dotted black; padding-top: 10px", :id => 'logfilter') do
+          strong "Show: "
+          a(:href => R(LogEntries, :list, :task_id => @task.id, :since => (Time.now - 1.day).to_formatted_s(:db)),
+            :target => 'log', :onclick => "clickbold(this)", :style => 'font-weight: bold') {"Last 24 Hours"}
+          text "|"
+          a(:href => R(LogEntries, :list, :task_id => @task.id, :since => (Time.now - 2.days).to_formatted_s(:db)),
+            :target => 'log', :onclick => "clickbold(this)") {"48 Hours"}
+          text "|"
+          a(:href => R(LogEntries, :list, :task_id => @task.id),
+            :target => 'log', :onclick => "clickbold(this)") {"All"}
+        end
+        iframe(:src => R(LogEntries, :list, :task_id => @task.id, :since => (Time.now - 1.day).to_formatted_s(:db)), 
+                :style => 'width: 100%;', :name => 'log')
       end
     end
     
