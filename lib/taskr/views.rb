@@ -239,6 +239,20 @@ module Taskr::Views
           text "|"
           a(:href => R(LogEntries, :list, :task_id => @task.id),
             :target => 'log', :onclick => "clickbold(this)") {"All"}
+          br
+          
+          strong "Level: "
+          a(:href => R(LogEntries, :list, :task_id => @task.id, :level => 'DEBUG'),
+            :target => 'log', :onclick => "clickbold(this)") {"DEBUG"}
+          text "|"
+          a(:href => R(LogEntries, :list, :task_id => @task.id, :level => 'INFO'),
+            :target => 'log', :onclick => "clickbold(this)") {"INFO"}
+          text "|"
+          a(:href => R(LogEntries, :list, :task_id => @task.id, :level => 'WARN'),
+            :target => 'log', :onclick => "clickbold(this)") {"WARN"}
+          text "|"
+          a(:href => R(LogEntries, :list, :task_id => @task.id, :level => 'ERROR'),
+            :target => 'log', :onclick => "clickbold(this)") {"ERROR"}
         end
         iframe(:src => R(LogEntries, :list, :task_id => @task.id, :since => (Time.now - 1.day).to_formatted_s(:db)), 
                 :style => 'width: 100%;', :name => 'log')
@@ -304,9 +318,11 @@ module Taskr::Views
     end
    
     def log_entries_list
-      h2 do
-        "Log" +
-         (@since.blank? ? "" : em(:style => "font-weight: normal; font-size: 9pt"){"Showing entries since #{@since}"})
+      h2 "Log"
+      
+      p(:style => 'margin: 0px') do
+        em(:style => "font-weight: normal; font-size: 9pt"){"Entries since #{@since}<br />"} unless @since.blank?
+        em(:style => "font-weight: normal; font-size: 9pt"){"With levels #{@level.join(", ")}<br />"} unless @level.blank?
       end
             
       table do

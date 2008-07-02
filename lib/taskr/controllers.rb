@@ -202,9 +202,13 @@ module Taskr::Controllers
   class LogEntries < REST 'log_entries'
     def list
       @since = @input[:since]
+      
+      @level = ['DEBUG', 'INFO', 'WARN', 'ERROR']
+      @level.index(@input[:level]).times {@level.shift} if @input[:level]
+      
       @log_entries = LogEntry.find(:all, 
-        :conditions => ['task_id = ? AND IF(?,timestamp > ?,1)', 
-                        @input[:task_id], !@since.blank?, @since],
+        :conditions => ['task_id = ? AND IF(?,timestamp > ?,1) AND level IN (?)', 
+                        @input[:task_id], !@since.blank?, @since, @level],
         :order => 'timestamp DESC, id DESC')
       
       render :log_entries_list
