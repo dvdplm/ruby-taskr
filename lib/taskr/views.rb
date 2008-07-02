@@ -255,7 +255,7 @@ module Taskr::Views
             :target => 'log', :onclick => "clickbold(this)") {"ERROR"}
         end
         iframe(:src => R(LogEntries, :list, :task_id => @task.id, :since => (Time.now - 1.day).to_formatted_s(:db)), 
-                :style => 'width: 100%;', :name => 'log')
+                :style => 'width: 100%; height: 300px', :name => 'log')
       end
     end
     
