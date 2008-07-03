@@ -58,13 +58,13 @@ module Taskr
       
       def trigger(trigger_args = {})
         begin
-          $LOG.info("Executing task #{self.task.name}")
+          $LOG.info("Executing task #{self.task.name.inspect}")
           execute
           task.update_attribute(:last_triggered, Time.now)
           task.update_attribute(:last_triggered_error, nil)
         rescue => e
           puts
-          $LOG.error(e)
+          $LOG.error("Error while executing task #{self.task.name.inspect}! The error was: #{e}  (see Taskr log for debugging details)")
           $LOG.debug(e.backtrace.join($/))
           details = e.message
           details += "\n\n#{$LAST_ERROR_BODY}" if $LAST_ERROR_BODY # dumb way of reading Restr errors... Restr needs to be fixed
@@ -95,7 +95,7 @@ module Taskr
       
       def trigger(trigger_args = {})
         begin
-          $LOG.info("Executing task #{self.task.name}")
+          $LOG.info("Executing task #{self.task.name.inspect}")
           actions.each do |a|
             a.execute
             LogEntry.info(a, "Action #{a} executed.")
@@ -104,7 +104,7 @@ module Taskr
           task.update_attribute(:last_triggered, Time.now)
           task.update_attribute(:last_triggered_error, nil)
         rescue => e
-          $LOG.error(e)
+          $LOG.error("Error while executing task #{self.task.name.inspect}! The error was: #{e} (see Taskr log for debugging details)")
           $LOG.debug("#{e.backtrace}")
           task.update_attribute(:last_triggered, Time.now)
           task.update_attribute(:last_triggered_error, {:type => e.class.to_s, :details => "#{e.message}"})
@@ -296,11 +296,13 @@ module Taskr
     end
     
     class Taskr4rails < Base
-      self.parameters = ['url', 'auth', 'ruby_code']#, 'shell_command']
+      self.parameters = ['url', 'auth', 'ruby_code', 'dont_wait']#, 'shell_command']
       self.description = "Executes code on a remote Rails server via the taskr4rails plugin."
       
       def execute
         data = {
+          :task_name => task.name,
+          :task_id => task.id,
           :auth => parameters['auth'],
           :ruby_code => parameters['ruby_code']#,
           #:shell_command => parameters['shell_command']
