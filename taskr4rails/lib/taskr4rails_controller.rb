@@ -50,8 +50,10 @@ class Taskr4railsController < ActionController::Base
         end
       end
       if params[:dont_wait]
+        RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Task #{params[:task_name].inspect} is being forked into its own thread.")
         Process.detach(pid)
       else
+        RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Waiting for task #{params[:task_name].inspect} to complete.")
         pid.join
       end
       err = false
