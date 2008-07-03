@@ -51,6 +51,7 @@ class Taskr4railsController < ActionController::Base
       end
       if params[:dont_wait]
         RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Task #{params[:task_name].inspect} is being forked into its own thread.")
+        puts "Task #{params[:task_name].inspect} forked to process #{pid.inspect}".
         Process.detach(pid)
       else
         RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Waiting for task #{params[:task_name].inspect} to complete.")
@@ -58,7 +59,7 @@ class Taskr4railsController < ActionController::Base
       end
       err = false
     rescue => e
-      output << "#{e.class}: #{e}\n\nBACKTRACE:\n#{e.backtrace.join("\n")}"
+      puts "#{e.class}: #{e}\n\nBACKTRACE:\n#{e.backtrace.join("\n")}"
       err = true
     end
     $stdout = prev_stdout
