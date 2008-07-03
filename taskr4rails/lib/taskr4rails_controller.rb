@@ -41,7 +41,7 @@ class Taskr4railsController < ActionController::Base
     $stderr = io
     err = false # start off assuming there's no error
     begin
-      if params[:dont_wait]
+      if !params[:dont_wait].blank? && params[:dont_wait] != 0 && params[:dont_wait] != '0'
         puts "Task #{params[:task_name].inspect} will be forked to its own process because the 'dont_wait' parameter was set to true."
         
         # Monkey-patch Mongrel to not remove its pid file in the child
