@@ -42,7 +42,7 @@ class Taskr4railsController < ActionController::Base
     $stderr = io
     begin
       if params[:ruby_code]
-        RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Executing Ruby code: #{params[:ruby_code]}")
+        RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Executing task #{params[:task_name].inspect} with Ruby code: #{params[:ruby_code]}")
         eval(params[:ruby_code]) 
       end
       err = false
