@@ -304,6 +304,7 @@ module Taskr
           :task_name => task.name,
           :task_id => task.id,
           :auth => parameters['auth'],
+          :dont_wait => parameters['dont_wait'],
           :ruby_code => parameters['ruby_code']#,
           #:shell_command => parameters['shell_command']
         }
