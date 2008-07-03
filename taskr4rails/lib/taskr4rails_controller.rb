@@ -44,6 +44,11 @@ class Taskr4railsController < ActionController::Base
       if params[:dont_wait]
         puts "Task #{params[:task_name].inspect} will be forked to its own process because the 'dont_wait' parameter was set to true."
         
+        # Monkey-patch Mongrel to not remove its pid file in the child
+        # See: http://geekblog.vodpod.com/?p=26
+        require 'mongrel'
+        Mongrel::Configurator.class_eval("def remove_pid_file; puts 'child no-op'; end")
+        
         pid = fork do
           RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Executing task #{params[:task_name].inspect} with Ruby code: #{params[:ruby_code]}")
           eval(params[:ruby_code]) 
@@ -63,7 +68,7 @@ class Taskr4railsController < ActionController::Base
     end
     $stdout = prev_stdout
     $stderr = prev_stderr
-    output = io.read(nil)
+    output = io.string
     
     render :text => output, :status => (err ? 500 : 200)
   end
