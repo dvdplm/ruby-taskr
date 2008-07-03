@@ -1,7 +1,11 @@
 === In Progress...
 
 * Log entries in task view can now be filtered by date. By default only entries
-  from the last 24 hours are shown. 
+  from the last 24 hours are shown.
+* Added experimental 'dont_wait' parameter to the Taskr4Rails action that 
+  forces the remote code to be forked so that it does not hold up the entire 
+  server. Currently this will only work if the remote Rails server is running 
+  on Mongrel. 
 
 === 0.3.0 :: 2008-06-19
 
