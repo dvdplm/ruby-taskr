@@ -37,25 +37,23 @@ class Taskr4railsController < ActionController::Base
     
     io = StringIO.new
     prev_stdout, prev_stderr = $stdout, $stderr
-    output = ""
     $stdout = io
     $stderr = io
     begin
-      pid = fork do
-        begin
-          if params[:ruby_code]
-            RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Executing task #{params[:task_name].inspect} with Ruby code: #{params[:ruby_code]}")
-            eval(params[:ruby_code]) 
-          end
-        end
-      end
       if params[:dont_wait]
-        RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Task #{params[:task_name].inspect} is being forked into its own thread.")
+        pid = fork do
+          RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Executing task #{params[:task_name].inspect} with Ruby code: #{params[:ruby_code]}")
+          eval(params[:ruby_code]) 
+        end
+        
         puts "Task #{params[:task_name].inspect} forked to process #{pid.inspect}".
+        RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Task #{params[:task_name].inspect} is being forked into its own thread.")
+        
         Process.detach(pid)
       else
+        RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Executing task #{params[:task_name].inspect} with Ruby code: #{params[:ruby_code]}")
         RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Waiting for task #{params[:task_name].inspect} to complete.")
-        pid.join
+        eval(params[:ruby_code]) 
       end
       err = false
     rescue => e
