@@ -41,10 +41,15 @@ class Taskr4railsController < ActionController::Base
     $stdout = io
     $stderr = io
     begin
-      if params[:ruby_code]
-        RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Executing task #{params[:task_name].inspect} with Ruby code: #{params[:ruby_code]}")
-        eval(params[:ruby_code]) 
+      pid = fork do
+        begin
+          if params[:ruby_code]
+            RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Executing task #{params[:task_name].inspect} with Ruby code: #{params[:ruby_code]}")
+            eval(params[:ruby_code]) 
+          end
+        end
       end
+      Process.detach(pid)
       err = false
     rescue => e
       output << "#{e.class}: #{e}\n\nBACKTRACE:\n#{e.backtrace.join("\n")}"
