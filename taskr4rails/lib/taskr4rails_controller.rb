@@ -42,7 +42,7 @@ class Taskr4railsController < ActionController::Base
     err = false # start off assuming there's no error
     begin
       if params[:dont_wait]
-        puts "Task #{params[:task_name].inspect} will be forked to its own process because the 'dont_wait' parameter was set to true".
+        puts "Task #{params[:task_name].inspect} will be forked to its own process because the 'dont_wait' parameter was set to true."
         
         pid = fork do
           RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Executing task #{params[:task_name].inspect} with Ruby code: #{params[:ruby_code]}")
