@@ -39,14 +39,16 @@ class Taskr4railsController < ActionController::Base
     prev_stdout, prev_stderr = $stdout, $stderr
     $stdout = io
     $stderr = io
+    err = false # start off assuming there's no error
     begin
       if params[:dont_wait]
+        puts "Task #{params[:task_name].inspect} will be forked to its own process because the 'dont_wait' parameter was set to true".
+        
         pid = fork do
           RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Executing task #{params[:task_name].inspect} with Ruby code: #{params[:ruby_code]}")
           eval(params[:ruby_code]) 
         end
         
-        puts "Task #{params[:task_name].inspect} forked to process #{pid.inspect}".
         RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Task #{params[:task_name].inspect} is being forked into its own thread.")
         
         Process.detach(pid)
@@ -55,7 +57,6 @@ class Taskr4railsController < ActionController::Base
         RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Waiting for task #{params[:task_name].inspect} to complete.")
         eval(params[:ruby_code]) 
       end
-      err = false
     rescue => e
       puts "#{e.class}: #{e}\n\nBACKTRACE:\n#{e.backtrace.join("\n")}"
       err = true
