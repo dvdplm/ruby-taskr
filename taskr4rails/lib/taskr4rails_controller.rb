@@ -41,8 +41,10 @@ class Taskr4railsController < ActionController::Base
     $stdout = io
     $stderr = io
     begin
-      eval(params[:ruby_code]) if params[:ruby_code]
-      #output << (`cd #{RAILS_ROOT}; #{params[:shell_command]}` || "") if params[:shell_command]
+      if params[:ruby_code]
+        RAILS_DEFAULT_LOGGER.debug("*** Taskr4Rails -- Executing Ruby code: #{params[:ruby_code]}")
+        eval(params[:ruby_code]) 
+      end
       err = false
     rescue => e
       output << "#{e.class}: #{e}\n\nBACKTRACE:\n#{e.backtrace.join("\n")}"
