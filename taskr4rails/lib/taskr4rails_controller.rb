@@ -49,7 +49,11 @@ class Taskr4railsController < ActionController::Base
           end
         end
       end
-      Process.detach(pid)
+      if params[:dont_wait]
+        Process.detach(pid)
+      else
+        pid.join
+      end
       err = false
     rescue => e
       output << "#{e.class}: #{e}\n\nBACKTRACE:\n#{e.backtrace.join("\n")}"
