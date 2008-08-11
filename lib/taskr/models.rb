@@ -39,7 +39,7 @@ module Taskr::Models
     validates_presence_of :task_actions
     validates_associated :task_actions
     
-    def schedule!(scheduler)
+    def schedule!(scheduler = Taskr.scheduler)
       case schedule_method
       when 'cron'
         method = :schedule
@@ -62,7 +62,7 @@ module Taskr::Models
       
       $LOG.debug "Scheduling task #{name.inspect}: #{self.inspect}"
       
-      if task_actions.length > 0
+      if task_actions(true).length > 0
         action = prepare_action
       else
         $LOG.warn "Task #{name.inspect} has no actions and as a result will not be scheduled!"
@@ -149,6 +149,7 @@ module Taskr::Models
       :class_name => 'TaskActionParameter', 
       :foreign_key => :task_action_id,
       :dependent => :destroy
+    alias_method :parameters, :action_parameters
     
     has_many :log_entries
     has_one :last_log_entry,
@@ -168,6 +169,10 @@ module Taskr::Models
     
     def action_class
       self[:action_class_name].constantize
+    end
+    
+    def description
+      action_class.description
     end
     
     def to_xml(options = {})

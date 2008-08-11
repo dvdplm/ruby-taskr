@@ -52,6 +52,7 @@ module Taskr::Views
               th "Job ID"
               th "Created On"
               th "Created By"
+              th ""
             end
           end
           tbody do
@@ -73,6 +74,7 @@ module Taskr::Views
                 td(:class => "job-id") {t.scheduler_job_id}
                 td t.created_on
                 td t.created_by
+                td {a(:href => R(t, 'edit')) {"Edit"}}
               end
             end
           end
@@ -83,6 +85,96 @@ module Taskr::Views
       end
     end
     
+    def edit_task
+      html_scaffold do
+        script(:type => 'text/javascript') do
+          %{
+            function show_action_parameters(num) {
+              new Ajax.Updater('parameters_'+num, '#{R(Actions)}', {
+                  method: 'get',
+                  parameters: { 
+                    id: $F('action_class_name_'+num), 
+                    action: 'parameters_form',
+                    num: num
+                  }
+              });
+            }
+          }
+        end
+
+        a(:href => R(Tasks, :list)) {"Back to Task List"}
+
+        form :method => 'put', :action => R(@task, 'update') do
+          h1 "Edit Task \"#{@task.name}\""
+
+          p do
+            label 'name' 
+            br
+            input :type => 'text', :name => 'name', :value => @task.name, :size => 40
+          end
+          
+          p do
+            label 'schedule'
+            br
+            select(:name => 'schedule_method') do
+              ['every','at','in','cron'].each do |method|
+                if @task.schedule_method == method
+                  option(:value => method, :selected => 'selected') {method}
+                else
+                  option(:value => method) {method}
+                end
+              end
+            end
+            input :type => 'text', :name => 'schedule_when', :value => @task.schedule_when, :size => 30
+          end
+          
+          p do
+            label 'description/memo' 
+            br
+            textarea(:name => 'memo', :cols => '60', :rows => '4'){@task.memo}
+          end
+          
+          p do
+            label "Actions:"
+            @task.task_actions.each do |action|
+              div {action_parameters_form(action)}
+            end
+            # div do 
+            #   if @task.task_actions.length > 1
+            #     ol(:style => 'padding-left: 20px') do
+            #       @task.task_actions.each do |ta|
+            #         html_task_action_li(ta)
+            #       end
+            #     end
+            #   else
+            #     html_task_action_li(@task.task_actions.first)
+            #   end
+            # end
+          end
+          
+          
+          p do
+            a(:id => 'add_action', :href => '#'){'Add another action'}
+          end
+
+          script(:type => 'text/javascript') do
+            %{
+              Event.observe('add_action', 'click', function() {
+                new Ajax.Updater('add_action', '#{R(Actions, :new)}', {
+                    method: 'get',
+                    parameters: { num: $$('select.action_class_name').size() },
+                    insertion: Insertion.Before
+                });
+                return false;
+              })
+            }
+          end
+          
+          button(:type => 'submit') {"Save"}
+        end
+      end
+    end
+
     def new_task
       html_scaffold do
         script(:type => 'text/javascript') do
@@ -157,6 +249,9 @@ module Taskr::Views
         end
         form(:method => 'put', :style => 'display: inline', :action => R(@task, 'run')) do
           button(:type => 'submit', :value => 'run') {"Run Now!"}
+        end
+        form(:method => 'put', :style => 'display: inline', :action => R(@task, 'reload')) do
+          button(:type => 'submit', :value => 'reload') {"Reload!"}
         end
         br
         a(:href => R(Tasks, :list)) {"Back to Task List"}
@@ -253,7 +348,7 @@ module Taskr::Views
           text "|"
           a(:href => R(LogEntries, :list, :task_id => @task.id, :level => 'ERROR'),
             :target => 'log', :onclick => "clickbold(this)") {"ERROR"}
-        end
+        end        
         iframe(:src => R(LogEntries, :list, :task_id => @task.id, :since => (Time.now - 1.day).to_formatted_s(:db)), 
                 :style => 'width: 100%; height: 300px', :name => 'log')
       end
@@ -281,16 +376,20 @@ module Taskr::Views
       end
     end
     
-    def action_parameters_form
+    def action_parameters_form(action = @action)
       @num ||= 0
       
-      p {em @action.description}
+      p {em action.description}
       
-      @action.parameters.each do |param|
+      action.parameters.each do |param|
         p do
           label param
           br
-          input :type => 'text', :name => "action[#{@num}][#{param}]", :size => 50
+          unless action.is_a?(Taskr::Models::TaskAction) # Setting up a new task
+            input :type => 'text', :name => "action[#{@num}][#{param}]", :size => 50
+          else # Editing an existing task
+            input :type => 'text', :name => "action[action_id_#{action.id}][#{param.name}]", :size => 50, :value => param.value
+          end
         end
       end
     end
