@@ -11,8 +11,8 @@ require 'hoe'
 include FileUtils
 require File.join(File.dirname(__FILE__), 'lib', 'taskr', 'version')
 
-AUTHOR = "Matt Zukowski"  # can also be an array of Authors
-EMAIL = "matt at roughest dot net"
+AUTHOR = ["Matt Zukowski", "David Palm"]  # can also be an array of Authors
+EMAIL = ["matt at roughest dot net", "dvd plm on googles free email service"]
 DESCRIPTION = "cron-like scheduler service with a RESTful interface"
 GEM_NAME = "taskr" # what ppl will type to install your gem
 RUBYFORGE_PROJECT = "taskr" # The unix name for your project
@@ -59,4 +59,24 @@ hoe = Hoe.new(GEM_NAME, VERS) do |p|
     ['rufus-scheduler', '~> 1.0.7']
   ]
   p.spec_extras = {:executables => ['taskr', 'taskr-ctl']}
+end
+
+desc "Generate gemspec"
+task :gemspec do |x|
+  # Check the manifest before generating the gemspec
+  manifest = %x[rake check_manifest]
+  manifest.gsub!(/\(in .{1,}\)\n/, "")
+ 
+  unless manifest.empty?
+    print "\n", "#"*68, "\n"
+    print <<-EOS
+  Manifest.txt is not up-to-date. Please review the changes below.
+  If the changes are correct, run 'rake check_manifest | patch'
+  and then run this command again.
+EOS
+    print "#"*68, "\n\n"
+    puts manifest
+  else
+    %x[rake debug_gem > #{GEM_NAME}.gemspec]
+  end
 end
