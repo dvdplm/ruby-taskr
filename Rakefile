@@ -77,6 +77,9 @@ EOS
     print "#"*68, "\n\n"
     puts manifest
   else
-    %x[rake debug_gem > #{GEM_NAME}.gemspec]
+    gemspec = %x[rake debug_gem]
+    gemspec.gsub!(/\(in .{1,}\)\n/, "")
+    File.open("#{GEM_NAME}.gemspec",'w'){|f| f<<gemspec}
+    # %x[rake debug_gem > #{GEM_NAME}.gemspec]
   end
 end
