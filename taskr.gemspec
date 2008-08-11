@@ -1,4 +1,3 @@
-(in /Users/david/dev/ruby/ruby-taskr)
 Gem::Specification.new do |s|
   s.name = %q{taskr}
   s.version = "0.3.1"
