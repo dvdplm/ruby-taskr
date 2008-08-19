@@ -176,7 +176,7 @@ module Taskr::Controllers
     
     # Create and schedule a new task.
     def create
-      puts @input.inspect
+      $LOG.debug @input.inspect
       begin
         # the "0" is for compatibility with PHP's Zend_Rest_Client
         task_data = @input[:task] || @input["0"] || @input
@@ -204,10 +204,12 @@ module Taskr::Controllers
         if actions_data.kind_of?(Array)
           actions = actions_data
         elsif actions_data["0"]
+          $LOG.debug "Hash-ish"
           actions = []
           actions_data.each do |i,a|
             actions << a
           end
+          $LOG.debug "Converted hash into: #{actions.inspect}"
         else
           actions = actions_data[:action] || actions_data[:actions] || actions_data
         end
@@ -233,7 +235,7 @@ module Taskr::Controllers
           end
           
           action = TaskAction.new(:order => a[:order] || i, :action_class_name => action_class_name)
-          
+          $LOG.debug "Action should be initialized and ready for creation: #{action.inspect}"
           
           action_class.parameters.each do |p|
             value = a[p]
@@ -255,7 +257,7 @@ module Taskr::Controllers
         
         @task.schedule! Taskr.scheduler
         
-        if @task.save
+        if @task.save!
           location = "/tasks/#{@task.id}?format=#{@format}"
           $LOG.debug "#{@task} saved successfuly. Setting Location header to #{location.inspect}."
           @headers['Location'] = location

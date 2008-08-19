@@ -62,12 +62,28 @@ module Taskr::Models
       
       $LOG.debug "Scheduling task #{name.inspect}: #{self.inspect}"
       
-      if task_actions(true).length > 0
-        action = prepare_action
+      if self.new_record? # Need to distinguish between the edit/create cases. "Edit" needs to reload the task_actions or nothing works; "Create" needs NOT to relaod the actions, or the validations kick in and nothing works. FIXME!!!!!
+        if task_actions.length > 0
+          action = prepare_action
+        else
+          $LOG.warn "Task #{name.inspect} has no actions and as a result will not be scheduled!"
+          return false
+        end
       else
-        $LOG.warn "Task #{name.inspect} has no actions and as a result will not be scheduled!"
-        return false
+        if task_actions(true).length > 0
+          action = prepare_action
+        else
+          $LOG.warn "Task #{name.inspect} has no actions and as a result will not be scheduled!"
+          return false
+        end
       end
+      
+      # if task_actions(true).length > 0
+      #   action = prepare_action
+      # else
+      #   $LOG.warn "Task #{name.inspect} has no actions and as a result will not be scheduled!"
+      #   return false
+      # end
       
       job_id = scheduler.send(method, t || schedule_when, :schedulable => action)
       
